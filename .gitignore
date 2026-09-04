@@ -1,0 +1,5 @@
+# Exportaciones generadas (se regeneran con los scripts)
+/output/generados/*.svg
+/output/pdf/*.pdf
+/output/png/*.png
+!/output/**/.gitkeep

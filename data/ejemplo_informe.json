@@ -1,0 +1,13 @@
+{
+  "titulo": "Informe de Resultados - Estudio X",
+  "subtitulo": "Comparación de indicadores por grupo experimental",
+  "fecha": "04-09-2026",
+  "etiqueta1": "Grupo A",
+  "etiqueta2": "Grupo B",
+  "etiqueta3": "Grupo C",
+  "valor1": "42",
+  "valor2": "67",
+  "valor3": "55",
+  "autor": "Anibal Roman",
+  "pie": "Generado automáticamente con Inkscape + PowerShell"
+}

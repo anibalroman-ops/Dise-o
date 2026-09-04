@@ -1,0 +1,4 @@
+{
+  "inkscapePath": "C:\\Program Files\\Inkscape\\bin\\inkscape.exe",
+  "_comentario": "Ruta al ejecutable de Inkscape en Windows. Si Inkscape ya está en el PATH del sistema, los scripts lo detectan automáticamente y este archivo solo sirve de respaldo/documentación. Ajusta la ruta si instalaste Inkscape en otra carpeta."
+}

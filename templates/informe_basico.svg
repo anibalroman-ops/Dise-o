@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="700" viewBox="0 0 1000 700">
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff" />
+
+  <text id="titulo" x="50" y="70" font-family="Arial, sans-serif" font-size="34" font-weight="bold" fill="#1a1a1a">
+    <tspan>Título del informe</tspan>
+  </text>
+
+  <text id="subtitulo" x="50" y="105" font-family="Arial, sans-serif" font-size="18" fill="#555555">
+    <tspan>Subtítulo o descripción breve</tspan>
+  </text>
+
+  <text id="fecha" x="50" y="135" font-family="Arial, sans-serif" font-size="14" fill="#888888">
+    <tspan>dd-mm-aaaa</tspan>
+  </text>
+
+  <line x1="50" y1="155" x2="950" y2="155" stroke="#dddddd" stroke-width="2" />
+
+  <!-- Gráfico de barras simple: ajustar height/y de cada rect según los datos -->
+  <g id="grafico">
+    <line x1="120" y1="550" x2="850" y2="550" stroke="#333333" stroke-width="2" />
+
+    <rect id="barra1" x="180" y="350" width="120" height="200" fill="#2e7d32" />
+    <text id="etiqueta1" x="240" y="580" font-family="Arial, sans-serif" font-size="16" fill="#333333" text-anchor="middle">
+      <tspan>Grupo A</tspan>
+    </text>
+    <text id="valor1" x="240" y="335" font-family="Arial, sans-serif" font-size="16" fill="#333333" text-anchor="middle">
+      <tspan>0</tspan>
+    </text>
+
+    <rect id="barra2" x="420" y="300" width="120" height="250" fill="#1565c0" />
+    <text id="etiqueta2" x="480" y="580" font-family="Arial, sans-serif" font-size="16" fill="#333333" text-anchor="middle">
+      <tspan>Grupo B</tspan>
+    </text>
+    <text id="valor2" x="480" y="285" font-family="Arial, sans-serif" font-size="16" fill="#333333" text-anchor="middle">
+      <tspan>0</tspan>
+    </text>
+
+    <rect id="barra3" x="660" y="400" width="120" height="150" fill="#c62828" />
+    <text id="etiqueta3" x="720" y="580" font-family="Arial, sans-serif" font-size="16" fill="#333333" text-anchor="middle">
+      <tspan>Grupo C</tspan>
+    </text>
+    <text id="valor3" x="720" y="385" font-family="Arial, sans-serif" font-size="16" fill="#333333" text-anchor="middle">
+      <tspan>0</tspan>
+    </text>
+  </g>
+
+  <text id="autor" x="50" y="660" font-family="Arial, sans-serif" font-size="12" fill="#999999">
+    <tspan>Autor</tspan>
+  </text>
+
+  <text id="pie" x="950" y="660" font-family="Arial, sans-serif" font-size="12" fill="#999999" text-anchor="end">
+    <tspan>Generado automáticamente</tspan>
+  </text>
+</svg>

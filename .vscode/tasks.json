@@ -1,0 +1,47 @@
+{
+  "version": "2.0.0",
+  "options": {
+    "shell": {
+      "executable": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
+    }
+  },
+  "tasks": [
+    {
+      "label": "Inkscape: Exportar SVG activo a PDF",
+      "type": "shell",
+      "command": "& '${workspaceFolder}/scripts/ps/Export-Diagram.ps1' -InputSvg '${file}' -Format pdf",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "Inkscape: Exportar SVG activo a PNG (300dpi)",
+      "type": "shell",
+      "command": "& '${workspaceFolder}/scripts/ps/Export-Diagram.ps1' -InputSvg '${file}' -Format png -Dpi 300",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "Inkscape: Exportar todos los diagramas generados a PDF",
+      "type": "shell",
+      "command": "& '${workspaceFolder}/scripts/ps/Export-AllDiagrams.ps1' -Format pdf",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "Inkscape: Exportar todos los diagramas generados a PNG",
+      "type": "shell",
+      "command": "& '${workspaceFolder}/scripts/ps/Export-AllDiagrams.ps1' -Format png -Dpi 300",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "Inkscape: Generar informe de ejemplo desde plantilla",
+      "type": "shell",
+      "command": "& '${workspaceFolder}/scripts/ps/New-FromTemplate.ps1' -TemplatePath '${workspaceFolder}/templates/informe_basico.svg' -DataFile '${workspaceFolder}/data/ejemplo_informe.json' -OutputSvg '${workspaceFolder}/output/generados/informe_ejemplo.svg' -ExportarPdf",
+      "problemMatcher": [],
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared" }
+    }
+  ]
+}
