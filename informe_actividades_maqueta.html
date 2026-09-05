@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informe Anual de Actividades — maqueta</title>
+<style>
+  :root{
+    --tinta:#1c1f26; --tinta-2:#5b6270; --tinta-3:#8a909c;
+    --linea:#d7dbe2; --linea-fuerte:#b3bac6;
+    --papel:#fff; --fondo:#eef0f4; --acento:#1f4e79; --acento-suave:#eaf0f6;
+    --serie-comp:#2f6fa8; --serie-real:#b3701a;
+    --ok:#1c6b45; --alerta:#8a4b0f; --error:#a02020; --neutro:#6b7280;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fondo);color:var(--tinta);
+       font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;font-size:14px}
+
+  .barra{position:sticky;top:0;z-index:20;background:var(--tinta);color:#fff;
+         padding:9px 16px;display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+  .barra strong{font-weight:600;margin-right:6px}
+  .barra .sep{flex:1}
+  .barra select,.barra button{font:inherit;font-size:13px;border-radius:5px;border:1px solid #464c58;
+        background:#2a2f39;color:#fff;padding:6px 10px;cursor:pointer}
+  .barra button:hover{background:#39404d}
+  .estado{font-size:12px;color:#a9b1bf}
+
+  .hoja{background:var(--papel);width:297mm;min-height:210mm;margin:16px auto;padding:12mm 12mm 9mm;
+        box-shadow:0 2px 14px rgba(0,0,0,.14);display:flex;flex-direction:column}
+
+  .encabezado{display:flex;justify-content:space-between;align-items:flex-start;
+              border-bottom:2px solid var(--acento);padding-bottom:7px;margin-bottom:10px}
+  .marca{font-size:10.5px;color:var(--tinta-2);line-height:1.4;text-transform:uppercase;letter-spacing:.04em}
+  .marca b{display:block;font-size:15px;color:var(--acento);letter-spacing:0;text-transform:none}
+  .periodo{text-align:right;font-size:10.5px;color:var(--tinta-2)}
+  .periodo b{display:block;font-size:19px;color:var(--tinta)}
+
+  h2{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--tinta-2);
+     margin:13px 0 5px;font-weight:600}
+
+  .identificacion{display:grid;grid-template-columns:repeat(6,1fr);border:1px solid var(--linea)}
+  .campo{padding:5px 8px;border-right:1px solid var(--linea)}
+  .campo:last-child{border-right:0}
+  .campo .et{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--tinta-2)}
+  .campo .va{font-size:12.5px;margin-top:2px}
+
+  /* ---------- resumen: tiles + barras ---------- */
+  .resumen{display:grid;grid-template-columns:1fr 1.5fr;gap:14px;align-items:stretch}
+  .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;grid-auto-rows:1fr}
+  .tile{border:1px solid var(--linea);padding:7px 9px}
+  .tile .et{font-size:8.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--tinta-2)}
+  .tile .n{font-size:21px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:1px;line-height:1.1}
+  .tile .sub{font-size:9.5px;color:var(--tinta-3);margin-top:1px}
+
+  .grafico{border:1px solid var(--linea);padding:8px 10px}
+  .leyenda{display:flex;gap:14px;font-size:9.5px;color:var(--tinta-2);margin-bottom:6px}
+  .llave{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+  .fila-barra{margin-bottom:5px}
+  .fila-barra .nom{font-size:9.5px;color:var(--tinta-2);margin-bottom:1px}
+  .par{display:flex;flex-direction:column;gap:2px}
+  .pista{display:flex;align-items:center;gap:5px}
+  .barra-dato{height:7px;border-radius:0 4px 4px 0;min-width:2px}
+  .val{font-size:9px;color:var(--tinta-2);font-variant-numeric:tabular-nums}
+
+  /* ---------- tablas ---------- */
+  table{width:100%;border-collapse:collapse;table-layout:fixed}
+  thead th{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--tinta-2);
+           text-align:left;padding:5px 6px;border-bottom:1.5px solid var(--linea-fuerte);font-weight:600}
+  td{padding:5px 6px;border-bottom:1px solid var(--linea);vertical-align:top;font-size:11.5px;line-height:1.35}
+  .banda td{background:var(--acento-suave);border-bottom:1px solid var(--linea-fuerte);
+            font-size:10px;text-transform:uppercase;letter-spacing:.07em;font-weight:600;color:var(--acento);padding:4px 6px}
+  .banda .hrs{float:right;font-variant-numeric:tabular-nums;letter-spacing:0;text-transform:none;font-size:10.5px}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .cda{color:var(--tinta-2)}
+  .cda .marca-cda{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:var(--tinta-3)}
+  .celda[contenteditable]{outline:none;min-height:15px}
+  .celda[contenteditable]:focus{background:#fffbe8;box-shadow:inset 0 0 0 1px #e6d9a8}
+  .req:empty:after{content:"Obligatorio: describir el resultado obtenido";color:#c99;font-style:italic}
+  .vacio:after{content:"—";color:#c3c8d1}
+  input.h-in{width:32px;font:inherit;font-size:11.5px;text-align:right;border:0;background:transparent;
+             border-bottom:1px dotted var(--linea-fuerte);font-variant-numeric:tabular-nums}
+  input.h-in:focus{outline:none;background:#fffbe8}
+  .delta{display:block;font-size:8.5px;margin-top:1px}
+  .delta.mas{color:var(--alerta)} .delta.menos{color:var(--tinta-3)} .delta.igual{color:var(--ok)}
+
+  select.est{font:inherit;font-size:9px;text-transform:uppercase;letter-spacing:.04em;padding:2px 4px;
+             border-radius:3px;border:1px solid var(--linea-fuerte);background:#fff;cursor:pointer;width:100%}
+  select.est[data-v="cumplido"]{background:#eaf5ee;border-color:#9ac6ae;color:var(--ok)}
+  select.est[data-v="parcial"]{background:#fdf1e3;border-color:#e2bd8e;color:var(--alerta)}
+  select.est[data-v="no"]{background:#fbeaea;border-color:#dda6a6;color:var(--error)}
+  select.est[data-v="repro"]{background:#f1f2f4;border-color:var(--linea-fuerte);color:var(--neutro)}
+
+  .evid{display:flex;flex-wrap:wrap;gap:3px}
+  .doc{font-size:9px;border:1px solid var(--linea-fuerte);border-radius:3px;padding:1px 5px;background:#f8f9fb;
+       color:var(--tinta-2);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .doc b{font-weight:600;color:var(--tinta-3);margin-right:3px}
+  .adj{font-size:9px;border:1px dashed var(--linea-fuerte);border-radius:3px;padding:1px 6px;background:#fff;
+       color:var(--acento);cursor:pointer}
+  .quitar{border:0;background:transparent;color:#c3c8d1;cursor:pointer;font-size:13px;line-height:1;padding:0 2px}
+  .quitar:hover{color:var(--error)}
+  tfoot td{border-top:1.5px solid var(--linea-fuerte);border-bottom:0;padding-top:6px;font-size:11px;font-weight:600}
+  tfoot .num{white-space:nowrap}
+
+  .agregar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;background:#f6f8fa;
+           border:1px solid var(--linea);padding:6px 9px;margin-top:6px}
+  .agregar select{font:inherit;font-size:12px;padding:4px 6px;border:1px solid var(--linea-fuerte);
+                  border-radius:4px;background:#fff;color:var(--tinta)}
+  .agregar button{font:inherit;font-size:12px;padding:5px 12px;border-radius:4px;border:1px solid var(--acento);
+                  background:var(--acento);color:#fff;cursor:pointer}
+
+  .nota{font-size:10px;color:var(--tinta-2);border-left:3px solid var(--linea-fuerte);padding:4px 9px;margin-top:8px;background:#f8f9fb}
+
+  .inferior{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-top:12px}
+  .caja{border:1px solid var(--linea);min-height:52px;padding:6px 8px;font-size:11.5px}
+  .firmas{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-content:end}
+  .firma{border-top:1px solid var(--tinta);padding-top:4px;font-size:10.5px;color:var(--tinta-2)}
+  .firma b{display:block;color:var(--tinta);font-size:11.5px;font-weight:600}
+  .pie{margin-top:auto;padding-top:6px;display:flex;justify-content:space-between;
+       border-top:1px solid var(--linea);font-size:9px;color:var(--tinta-2)}
+
+  .reservada{border:1px dashed var(--alerta);background:#fffaf3;padding:9px 12px;margin-top:12px}
+  .reservada h2{color:var(--alerta);margin-top:0}
+  .reservada p{margin:0 0 7px;font-size:11px;color:var(--tinta-2);line-height:1.5}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:11px;border:1px solid var(--linea-fuerte);border-radius:12px;padding:3px 10px;cursor:pointer;background:#fff}
+  .chip.on{background:#fdf1e3;border-color:#e2bd8e;color:var(--alerta);font-weight:600}
+
+  .avisos{margin-top:10px;font-size:11.5px}
+  .aviso{padding:5px 10px;border-left:3px solid;margin-bottom:4px;background:#f7f8fa}
+  .aviso.e{border-color:var(--error);color:var(--error)}
+  .aviso.w{border-color:var(--alerta);color:var(--alerta)}
+  .aviso.k{border-color:var(--ok);color:var(--ok)}
+
+  .solo-lectura .celda[contenteditable],.solo-lectura input,.solo-lectura select.est,
+  .solo-lectura .adj,.solo-lectura .agregar,.solo-lectura .quitar{pointer-events:none;opacity:.92}
+  .oculto{display:none!important}
+
+  @media print{
+    body{background:#fff}
+    .barra,.no-imprime{display:none!important}
+    .hoja{box-shadow:none;margin:0;width:auto;min-height:auto;padding:0}
+    @page{size:A4 landscape;margin:10mm}
+  }
+  @media (max-width:1180px){ .hoja{width:auto;padding:14px} .identificacion{grid-template-columns:repeat(3,1fr)}
+    .resumen,.inferior{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<div class="barra">
+  <strong>Maqueta Informe anual</strong>
+  <label class="estado" for="rol">Rol:</label>
+  <select id="rol">
+    <option value="academico">Académico o académica</option>
+    <option value="director">Director de Departamento</option>
+    <option value="comision">Comisión evaluadora</option>
+  </select>
+  <button id="btn-val">Validar antes de enviar</button>
+  <button id="btn-res">Circunstancias sobrevinientes</button>
+  <button id="btn-print">Imprimir</button>
+  <span class="sep"></span>
+  <span class="estado" id="estado">borrador local</span>
+  <button id="btn-clear">Vaciar resultados</button>
+</div>
+
+<div class="hoja" id="hoja">
+
+  <div class="encabezado">
+    <div class="marca">
+      Universidad de Santiago de Chile
+      <b>Informe Anual de Actividades Académicas</b>
+      Facultad de Ingeniería
+    </div>
+    <div class="periodo">Período informado<b id="anio">2026</b>Presentado ante la comisión evaluadora</div>
+  </div>
+
+  <div class="identificacion">
+    <div class="campo"><div class="et">Académico o académica</div><div class="va">Nombre Apellido Apellido</div></div>
+    <div class="campo"><div class="et">Unidad académica</div><div class="va">Depto. de Ingeniería Industrial</div></div>
+    <div class="campo"><div class="et">Jerarquía</div><div class="va">Profesor Asociado</div></div>
+    <div class="campo"><div class="et">Jornada contractual</div><div class="va"><span id="jornada">44</span> h semanales</div></div>
+    <div class="campo"><div class="et">CDA de referencia</div><div class="va">v1.0 · 12-03-2026</div></div>
+    <div class="campo"><div class="et">Circunstancias sobrevinientes</div><div class="va" id="ind-res">No declaradas</div></div>
+  </div>
+
+  <h2>Resumen del período</h2>
+  <div class="resumen">
+    <div class="tiles">
+      <div class="tile"><div class="et">Horas comprometidas</div><div class="n" id="t-comp">0 h</div>
+        <div class="sub">semanales, según CDA</div></div>
+      <div class="tile"><div class="et">Horas realizadas</div><div class="n" id="t-real">0 h</div>
+        <div class="sub">semanales, declaradas</div></div>
+      <div class="tile"><div class="et">Compromisos cumplidos</div><div class="n" id="t-cump">0 / 0</div>
+        <div class="sub">según estado declarado</div></div>
+      <div class="tile"><div class="et">Evidencias adjuntas</div><div class="n" id="t-evid">0</div>
+        <div class="sub">documentos cargados</div></div>
+    </div>
+
+    <div class="grafico">
+      <div class="leyenda">
+        <span><span class="llave" style="background:var(--serie-comp)"></span>Comprometidas</span>
+        <span><span class="llave" style="background:var(--serie-real)"></span>Realizadas</span>
+        <span style="color:var(--tinta-3)">horas semanales por área</span>
+      </div>
+      <div id="barras"></div>
+    </div>
+  </div>
+
+  <h2>Compromisos del Convenio de Desempeño Académico</h2>
+  <table id="tabla">
+    <colgroup>
+      <col style="width:18%"><col style="width:12%"><col style="width:14%"><col style="width:19%">
+      <col style="width:15%"><col style="width:5%"><col style="width:5%"><col style="width:12%">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Actividad comprometida</th><th>Contexto o código</th><th>Producto esperado</th>
+        <th>Resultado obtenido</th><th>Evidencia adjunta</th>
+        <th class="num">H. comp.</th><th class="num">H. real.</th><th>Estado</th>
+      </tr>
+    </thead>
+    <tbody id="cuerpo"></tbody>
+    <tfoot>
+      <tr><td colspan="5">Total horas semanales</td>
+          <td class="num" id="f-comp">0</td><td class="num" id="f-real">0</td><td id="f-nota"></td></tr>
+    </tfoot>
+  </table>
+
+  <h2>Actividades realizadas no comprometidas en el Convenio</h2>
+  <table id="tabla2">
+    <colgroup>
+      <col style="width:20%"><col style="width:12%"><col style="width:18%"><col style="width:23%">
+      <col style="width:16%"><col style="width:6%"><col style="width:5%">
+    </colgroup>
+    <thead>
+      <tr><th>Actividad realizada</th><th>Área</th><th>Contexto o código</th><th>Resultado obtenido</th>
+          <th>Evidencia adjunta</th><th class="num">H. real.</th><th class="no-imprime"></th></tr>
+    </thead>
+    <tbody id="cuerpo2"></tbody>
+  </table>
+  <div class="agregar no-imprime" id="agregar">
+    <select id="sel-area"></select>
+    <button id="btn-add">+ Agregar actividad no comprometida</button>
+    <span class="estado" style="color:#8a909c">Se informan para su consideración; no reemplazan los compromisos del CDA.</span>
+  </div>
+
+  <div class="nota">
+    La diferencia entre horas comprometidas y realizadas se informa como antecedente del período y no modifica por sí sola
+    el nivel de desempeño asignado. La comisión valorará la evidencia verificable, el rol desempeñado y la coherencia con
+    la jerarquía académica y la jornada contractual.
+  </div>
+
+  <div class="inferior">
+    <div>
+      <h2>Autoevaluación del período</h2>
+      <div class="caja celda req" id="auto" contenteditable="true"></div>
+    </div>
+    <div>
+      <h2>Declaración y recepción</h2>
+      <div class="firmas">
+        <div class="firma"><b>Nombre Apellido Apellido</b>Declara la veracidad de lo informado · fecha</div>
+        <div class="firma"><b>Nombre Apellido</b>Director de Departamento · recepción</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reservada oculto no-imprime" id="reservada">
+    <h2>Circunstancias sobrevinientes del período</h2>
+    <p>Declaración facultativa y reservada conforme al artículo 52. Se informa aquí cuando la circunstancia se produjo o
+       se prolongó después de formalizado el Convenio. Da lugar a la modificación excepcional prevista en el artículo 25 y
+       ajusta el volumen de compromisos esperado, no las exigencias de calidad ni la escala de evaluación.</p>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div class="avisos no-imprime" id="avisos"></div>
+
+  <div class="pie">
+    <span>Informe Anual de Actividades Académicas · período <span id="anio2"></span> · generado el <span id="fecha"></span></span>
+    <span>Documento de entrada al proceso evaluativo</span>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   CONFIGURACIÓN EDITABLE
+   ========================================================================= */
+const JORNADA = 44;
+const AREAS = ["Docencia","Investigación y desarrollo","Vinculación con el medio","Gestión académica","Perfeccionamiento"];
+const ESTADOS = [["cumplido","Cumplido"],["parcial","Parcial"],["no","No realizado"],["repro","Reprogramado"]];
+const CIRCUNSTANCIAS = ["Pre y postnatal","Permiso postnatal parental","Responsabilidades de cuidado",
+  "Licencia médica prolongada","Inicio de carrera tras el grado","Cambio o reducción de jornada"];
+
+/* Compromisos traídos del CDA (no editables) + resultados declarados */
+const COMPROMISOS = [
+ {area:0, act:"Dictación de asignatura de pregrado", ctx:"Gestión de Operaciones, 2 secciones, plan 2022. Código IND-2045.",
+  prod:"Cursos dictados y evaluados conforme a planeación docente", hc:12,
+  res:"Ambas secciones dictadas y cerradas. 78 estudiantes, 71 aprobados. Se incorporó evaluación por proyecto.",
+  hr:13, est:"cumplido", ev:["PDF · Actas de notas 2026","XLSX · Planeación docente"]},
+ {area:0, act:"Dirección de memoria o proyecto de título", ctx:"Tres memorias en curso, línea de logística urbana.",
+  prod:"Memorias aprobadas por comisión", hc:4,
+  res:"Tres memorias dirigidas; dos aprobadas con distinción, una en examen de marzo 2027.",
+  hr:5, est:"parcial", ev:["PDF · Actas de examen (2)"]},
+ {area:1, act:"Ejecución de proyecto de investigación con financiamiento externo", ctx:"Fondecyt Regular 1230000, año 2 de 4.",
+  prod:"Informe de avance aprobado y un artículo enviado a revista indexada", hc:11,
+  res:"Informe de avance aprobado por ANID. Un artículo aceptado en revista WoS Q2 y un segundo en revisión.",
+  hr:12, est:"cumplido", ev:["PDF · Informe ANID aprobado","PDF · Carta de aceptación"]},
+ {area:1, act:"Dirección de estudiantes de postgrado en investigación", ctx:"Codirección de una tesis doctoral, programa DCI.",
+  prod:"Avance de tesis con estado aprobado", hc:2,
+  res:"Avance presentado y aprobado por el comité del programa.",
+  hr:2, est:"cumplido", ev:["PDF · Acta de comité"]},
+ {area:2, act:"Curso o programa de formación para el medio externo", ctx:"Curso de actualización para el sector productivo, convenio 2026-14.",
+  prod:"Curso ejecutado con evaluación de participantes", hc:3,
+  res:"No ejecutado en el período. La contraparte postergó el inicio a marzo de 2027; convenio vigente.",
+  hr:0, est:"repro", ev:["PDF · Carta de postergación"]},
+ {area:3, act:"Coordinación de comité curricular o de área", ctx:"Comité curricular de Ingeniería Civil Industrial, ajuste menor del plan.",
+  prod:"Propuesta de ajuste curricular presentada al Consejo", hc:7,
+  res:"Propuesta presentada y aprobada por el Consejo de Facultad en noviembre. Nueve sesiones de comité.",
+  hr:9, est:"cumplido", ev:["PDF · Actas del comité","PDF · Acuerdo de Consejo"]},
+ {area:4, act:"Programa de postgrado, diplomado o especialización", ctx:"Diplomado en docencia universitaria, UNIE, cohorte 2026.",
+  prod:"Diplomado aprobado", hc:5,
+  res:"Diplomado cursado y aprobado con nota 6,4.",
+  hr:5, est:"cumplido", ev:["PDF · Certificado de aprobación"]}
+];
+
+const EMERGENTES = [
+ {area:1, act:"Evaluación de proyectos para fondo concursable externo", ctx:"Panel de evaluadores ANID, convocatoria 2026.",
+  res:"Doce proyectos evaluados como par revisor.", hr:1, ev:["PDF · Constancia ANID"]}
+];
+
+/* ========================================================================= */
+const K = "cda_informe_v1";
+let filas = [], emerg = [], circ = [], rol = "academico";
+
+function guardar(){
+  try{ localStorage.setItem(K, JSON.stringify({filas,emerg,circ,auto:document.getElementById("auto").innerText.trim()}));
+       marcar("guardado en este navegador"); }catch(e){ marcar("sin guardado local"); }
+}
+function cargar(){
+  try{ const d = JSON.parse(localStorage.getItem(K)||"null");
+    if(d && d.filas && d.filas.length){ filas=d.filas; emerg=d.emerg||[]; circ=d.circ||[];
+      if(d.auto) document.getElementById("auto").innerText=d.auto; return true; }
+  }catch(e){}
+  return false;
+}
+let t; function marcar(txt){ const e=document.getElementById("estado"); e.textContent=txt;
+  clearTimeout(t); t=setTimeout(()=>e.textContent="borrador local",1800); }
+
+function esc(s){ return (s||"").replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c])); }
+function docs(lista, ref){
+  return `<div class="evid">`+ lista.map((d,j)=>{
+      const p = d.split(" · ");
+      return `<span class="doc" title="${esc(d)}"><b>${esc(p[0])}</b>${esc(p[1]||"")}</span>`;
+    }).join("") + `<button class="adj no-imprime" data-adj="${ref}">+ adjuntar</button></div>`;
+}
+
+/* ---- barras comprometidas vs realizadas ---- */
+function barras(){
+  const cont = document.getElementById("barras");
+  const datos = AREAS.map((n,ai)=>{
+    const c = filas.filter(f=>f.area===ai).reduce((a,f)=>a+(+f.hc||0),0);
+    const r = filas.filter(f=>f.area===ai).reduce((a,f)=>a+(+f.hr||0),0)
+            + emerg.filter(f=>f.area===ai).reduce((a,f)=>a+(+f.hr||0),0);
+    return {n,c,r};
+  }).filter(d=>d.c||d.r);
+  const max = Math.max(1, ...datos.map(d=>Math.max(d.c,d.r)));
+  cont.innerHTML = datos.map(d=>`
+    <div class="fila-barra">
+      <div class="nom">${esc(d.n)}</div>
+      <div class="par">
+        <div class="pista"><div class="barra-dato" style="width:${(d.c/max)*72}%;background:var(--serie-comp)"
+             title="${esc(d.n)} · comprometidas ${d.c} h"></div><span class="val">${d.c} h</span></div>
+        <div class="pista"><div class="barra-dato" style="width:${(d.r/max)*72}%;background:var(--serie-real)"
+             title="${esc(d.n)} · realizadas ${d.r} h"></div><span class="val">${d.r} h</span></div>
+      </div>
+    </div>`).join("");
+}
+
+/* ---- render ---- */
+function render(){
+  const cuerpo = document.getElementById("cuerpo");
+  cuerpo.innerHTML = "";
+  let tc = 0, tr = 0;
+  AREAS.forEach((nombre,ai)=>{
+    const dela = filas.map((f,i)=>({f,i})).filter(o=>o.f.area===ai);
+    if(!dela.length) return;
+    const sc = dela.reduce((a,o)=>a+(+o.f.hc||0),0);
+    const sr = dela.reduce((a,o)=>a+(+o.f.hr||0),0);
+    tc += sc; tr += sr;
+    const banda = document.createElement("tr");
+    banda.className = "banda";
+    banda.innerHTML = `<td colspan="8">${esc(nombre)}<span class="hrs">${sc} h comprometidas · ${sr} h realizadas</span></td>`;
+    cuerpo.appendChild(banda);
+    dela.forEach(({f,i})=>{
+      const d = (+f.hr||0) - (+f.hc||0);
+      const cls = d>0 ? "mas" : d<0 ? "menos" : "igual";
+      const txt = d>0 ? "+"+d+" h" : d<0 ? d+" h" : "igual";
+      const opts = ESTADOS.map(([v,l])=>`<option value="${v}"${v===f.est?" selected":""}>${l}</option>`).join("");
+      const tr2 = document.createElement("tr");
+      tr2.innerHTML =
+        `<td class="cda"><span class="marca-cda">Del CDA</span>${esc(f.act)}</td>`+
+        `<td class="cda">${esc(f.ctx)}</td>`+
+        `<td class="cda">${esc(f.prod)}</td>`+
+        `<td><div class="celda req" contenteditable data-i="${i}" data-c="res">${esc(f.res)}</div></td>`+
+        `<td>${docs(f.ev, "c"+i)}</td>`+
+        `<td class="num cda">${f.hc}</td>`+
+        `<td class="num"><input class="h-in" type="number" min="0" max="${JORNADA}" step="0.5" value="${+f.hr||0}" data-i="${i}">`+
+          `<span class="delta ${cls}">${txt}</span></td>`+
+        `<td><select class="est" data-est="${i}" data-v="${f.est}">${opts}</select></td>`;
+      cuerpo.appendChild(tr2);
+    });
+  });
+
+  const cuerpo2 = document.getElementById("cuerpo2");
+  cuerpo2.innerHTML = emerg.length ? "" :
+    `<tr><td colspan="7" style="color:#9aa2af;padding:10px 6px">Sin actividades no comprometidas informadas.</td></tr>`;
+  emerg.forEach((f,i)=>{
+    tr += (+f.hr||0);
+    const opts = AREAS.map((a,j)=>`<option value="${j}"${j===f.area?" selected":""}>${esc(a)}</option>`).join("");
+    const row = document.createElement("tr");
+    row.innerHTML =
+      `<td><div class="celda ${f.act?"":"vacio"}" contenteditable data-e="${i}" data-c="act">${esc(f.act)}</div></td>`+
+      `<td><select class="est" data-earea="${i}" style="text-transform:none;letter-spacing:0">${opts}</select></td>`+
+      `<td><div class="celda ${f.ctx?"":"vacio"}" contenteditable data-e="${i}" data-c="ctx">${esc(f.ctx)}</div></td>`+
+      `<td><div class="celda req" contenteditable data-e="${i}" data-c="res">${esc(f.res)}</div></td>`+
+      `<td>${docs(f.ev, "e"+i)}</td>`+
+      `<td class="num"><input class="h-in" type="number" min="0" max="${JORNADA}" step="0.5" value="${+f.hr||0}" data-e="${i}"></td>`+
+      `<td class="no-imprime"><button class="quitar" data-del="${i}" title="Eliminar">✕</button></td>`;
+    cuerpo2.appendChild(row);
+  });
+
+  document.getElementById("f-comp").textContent = tc;
+  document.getElementById("f-real").textContent = tr;
+  const dif = tr - tc;
+  document.getElementById("f-nota").textContent =
+    dif===0 ? "sin diferencia" : (dif>0 ? "+"+dif+" h sobre lo comprometido" : dif+" h bajo lo comprometido");
+  document.getElementById("t-comp").textContent = tc + " h";
+  document.getElementById("t-real").textContent = tr + " h";
+  const cump = filas.filter(f=>f.est==="cumplido").length;
+  document.getElementById("t-cump").textContent = cump + " / " + filas.length;
+  const nev = filas.reduce((a,f)=>a+f.ev.length,0) + emerg.reduce((a,f)=>a+f.ev.length,0);
+  document.getElementById("t-evid").textContent = nev;
+  document.getElementById("ind-res").textContent = circ.length ? "Declaradas (reservado)" : "No declaradas";
+  barras();
+  aplicarRol();
+}
+
+function renderChips(){
+  const c = document.getElementById("chips");
+  c.innerHTML = "";
+  CIRCUNSTANCIAS.forEach(x=>{
+    const b = document.createElement("button");
+    b.className = "chip" + (circ.includes(x) ? " on" : "");
+    b.textContent = x;
+    b.onclick = ()=>{ circ.includes(x) ? circ.splice(circ.indexOf(x),1) : circ.push(x); renderChips(); render(); guardar(); };
+    c.appendChild(b);
+  });
+}
+
+function aplicarRol(){
+  const hoja = document.getElementById("hoja");
+  hoja.classList.toggle("solo-lectura", rol!=="academico");
+  document.getElementById("agregar").classList.toggle("oculto", rol!=="academico");
+}
+
+function validar(){
+  const msg = [];
+  const sinres = filas.filter(f=>!(f.res||"").trim()).length;
+  if(sinres) msg.push(["e",`${sinres} compromiso(s) sin resultado obtenido. El campo es obligatorio.`]);
+  const sinev = filas.filter(f=>!f.ev.length && f.est!=="repro").length;
+  if(sinev) msg.push(["e",`${sinev} compromiso(s) sin evidencia adjunta.`]);
+  const sinest = filas.filter(f=>!f.est).length;
+  if(sinest) msg.push(["e",`${sinest} compromiso(s) sin estado declarado.`]);
+  if(!document.getElementById("auto").innerText.trim()) msg.push(["e","Falta la autoevaluación del período."]);
+  const noreal = filas.filter(f=>f.est==="no"||f.est==="repro");
+  if(noreal.length) msg.push(["w",`${noreal.length} compromiso(s) no realizados o reprogramados: verifica que el resultado explique la causa.`]);
+  const tc = filas.reduce((a,f)=>a+(+f.hc||0),0);
+  const trr = filas.reduce((a,f)=>a+(+f.hr||0),0) + emerg.reduce((a,f)=>a+(+f.hr||0),0);
+  if(Math.abs(trr-tc) >= 4) msg.push(["w",`La diferencia horaria del período es de ${trr-tc>0?"+":""}${trr-tc} h semanales; se informa como antecedente y no altera por sí sola el nivel de desempeño.`]);
+  if(!msg.filter(m=>m[0]==="e").length) msg.unshift(["k","El informe está completo y puede enviarse a la comisión evaluadora."]);
+  document.getElementById("avisos").innerHTML = msg.map(([t,x])=>`<div class="aviso ${t}">${x}</div>`).join("");
+}
+
+/* ---- eventos ---- */
+document.addEventListener("input", e=>{
+  const t = e.target;
+  if(t.classList.contains("celda") && t.dataset.i!==undefined){ filas[+t.dataset.i][t.dataset.c] = t.innerText.trim(); guardar(); }
+  else if(t.classList.contains("celda") && t.dataset.e!==undefined){ emerg[+t.dataset.e][t.dataset.c] = t.innerText.trim(); guardar(); }
+  else if(t.classList.contains("h-in")){
+    const foco = document.activeElement === t;
+    if(t.dataset.i!==undefined){ filas[+t.dataset.i].hr = Math.max(0, Math.min(JORNADA, +t.value||0)); }
+    else { emerg[+t.dataset.e].hr = Math.max(0, Math.min(JORNADA, +t.value||0)); }
+    const sel = t.dataset.i!==undefined ? `input.h-in[data-i="${t.dataset.i}"]` : `input.h-in[data-e="${t.dataset.e}"]`;
+    render(); guardar();
+    if(foco){ const n = document.querySelector(sel); if(n){ n.focus(); n.select(); } }
+  }
+  else if(t.id==="auto"){ guardar(); }
+});
+
+document.addEventListener("change", e=>{
+  const t = e.target;
+  if(t.dataset.est!==undefined){ filas[+t.dataset.est].est = t.value; render(); guardar(); }
+  else if(t.dataset.earea!==undefined){ emerg[+t.dataset.earea].area = +t.value; render(); guardar(); }
+});
+
+document.addEventListener("click", e=>{
+  const adj = e.target.dataset.adj, del = e.target.dataset.del;
+  if(adj!==undefined && rol==="academico"){
+    const nombre = prompt("Nombre del documento a adjuntar (maqueta):", "PDF · ");
+    if(nombre && nombre.trim()){
+      if(adj[0]==="c") filas[+adj.slice(1)].ev.push(nombre.trim());
+      else emerg[+adj.slice(1)].ev.push(nombre.trim());
+      render(); guardar();
+    }
+  }else if(del!==undefined){ emerg.splice(+del,1); render(); guardar(); }
+});
+
+document.getElementById("btn-add").onclick = ()=>{
+  emerg.push({area:+document.getElementById("sel-area").value, act:"", ctx:"", res:"", hr:0, ev:[]});
+  render(); guardar();
+  const f = document.querySelector(`.celda[data-e="${emerg.length-1}"][data-c="act"]`); if(f) f.focus();
+};
+document.getElementById("btn-val").onclick = validar;
+document.getElementById("btn-res").onclick = ()=> document.getElementById("reservada").classList.toggle("oculto");
+document.getElementById("btn-print").onclick = ()=> window.print();
+document.getElementById("btn-clear").onclick = ()=>{
+  filas.forEach(f=>{ f.res=""; f.hr=0; f.est="cumplido"; f.ev=[]; });
+  emerg = []; circ = []; document.getElementById("auto").innerText = "";
+  document.getElementById("avisos").innerHTML = "";
+  renderChips(); render(); guardar();
+};
+document.getElementById("rol").onchange = e=>{ rol = e.target.value; aplicarRol(); };
+
+/* ---- inicio ---- */
+if(!cargar()){ filas = JSON.parse(JSON.stringify(COMPROMISOS)); emerg = JSON.parse(JSON.stringify(EMERGENTES)); }
+if(!document.getElementById("auto").innerText.trim()){
+  document.getElementById("auto").innerText =
+    "El período se cumplió conforme a lo convenido, con un desplazamiento hacia gestión curricular por la coordinación del "+
+    "comité y una postergación en vinculación con el medio atribuible a la contraparte. El foco de mejora para el próximo "+
+    "período es consolidar la publicación en revisión y reactivar el curso postergado.";
+}
+document.getElementById("sel-area").innerHTML = AREAS.map((a,i)=>`<option value="${i}">${esc(a)}</option>`).join("");
+document.getElementById("fecha").textContent = new Date().toLocaleDateString("es-CL");
+document.getElementById("anio").textContent = new Date().getFullYear();
+document.getElementById("anio2").textContent = new Date().getFullYear();
+document.getElementById("jornada").textContent = JORNADA;
+renderChips();
+render();
+</script>
+</body>
+</html>
