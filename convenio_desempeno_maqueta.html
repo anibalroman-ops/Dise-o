@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Convenio de Desempeño Académico — maqueta</title>
+<style>
+  :root{
+    --tinta:#1c1f26;
+    --tinta-2:#5b6270;
+    --linea:#d7dbe2;
+    --linea-fuerte:#b3bac6;
+    --papel:#ffffff;
+    --fondo:#eef0f4;
+    --acento:#1f4e79;
+    --acento-suave:#eaf0f6;
+    --ok:#1c6b45;
+    --alerta:#8a4b0f;
+    --error:#a02020;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fondo);color:var(--tinta);
+       font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;font-size:14px}
+
+  /* ---------- barra de control (no se imprime) ---------- */
+  .barra{position:sticky;top:0;z-index:20;background:var(--tinta);color:#fff;
+         padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .barra strong{font-weight:600;letter-spacing:.02em;margin-right:6px}
+  .barra .sep{flex:1}
+  .barra select,.barra button{font:inherit;font-size:13px;border-radius:5px;border:1px solid #464c58;
+        background:#2a2f39;color:#fff;padding:6px 10px;cursor:pointer}
+  .barra button:hover{background:#39404d}
+  .barra button.primario{background:var(--acento);border-color:var(--acento)}
+  .barra button.primario:hover{background:#27608f}
+  .estado{font-size:12px;color:#a9b1bf}
+
+  /* ---------- hoja ---------- */
+  .hoja{background:var(--papel);width:210mm;min-height:297mm;margin:18px auto;padding:16mm 15mm 12mm;
+        box-shadow:0 2px 14px rgba(0,0,0,.14);display:flex;flex-direction:column}
+
+  .encabezado{display:flex;justify-content:space-between;align-items:flex-start;
+              border-bottom:2px solid var(--acento);padding-bottom:8px;margin-bottom:12px}
+  .marca{font-size:11px;color:var(--tinta-2);line-height:1.45;text-transform:uppercase;letter-spacing:.04em}
+  .marca b{display:block;font-size:15px;color:var(--acento);letter-spacing:0;text-transform:none}
+  .periodo{text-align:right;font-size:11px;color:var(--tinta-2)}
+  .periodo b{display:block;font-size:20px;color:var(--tinta)}
+
+  h1{font-size:16px;margin:0 0 10px;letter-spacing:.01em}
+  h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tinta-2);
+     margin:16px 0 6px;font-weight:600}
+
+  /* A. identificación */
+  .identificacion{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--linea)}
+  .campo{padding:6px 8px;border-right:1px solid var(--linea);border-bottom:1px solid var(--linea)}
+  .campo:nth-child(4n){border-right:0}
+  .campo:nth-child(n+5){border-bottom:0}
+  .campo .et{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--tinta-2)}
+  .campo .va{font-size:13px;margin-top:2px}
+  .precargado{color:var(--tinta)}
+
+  /* B. compromisos */
+  table{width:100%;border-collapse:collapse;table-layout:fixed}
+  thead th{font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--tinta-2);
+           text-align:left;padding:5px 6px;border-bottom:1.5px solid var(--linea-fuerte);font-weight:600}
+  td{padding:5px 6px;border-bottom:1px solid var(--linea);vertical-align:top;font-size:12px;line-height:1.35}
+  .banda td{background:var(--acento-suave);border-bottom:1px solid var(--linea-fuerte);
+            font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:600;color:var(--acento);
+            padding:4px 6px}
+  .banda .pct{float:right;font-variant-numeric:tabular-nums;letter-spacing:0}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .celda[contenteditable]{outline:none;min-height:16px}
+  .celda[contenteditable]:focus{background:#fffbe8;box-shadow:inset 0 0 0 1px #e6d9a8}
+  .vacio:after{content:"—";color:#c3c8d1}
+  .nowrap{white-space:nowrap}
+  input.pond{width:34px;font:inherit;font-size:12px;text-align:right;border:0;background:transparent;
+             border-bottom:1px dotted var(--linea-fuerte);font-variant-numeric:tabular-nums}
+  input.pond:focus{outline:none;background:#fffbe8}
+  .origen{font-size:8.5px;text-transform:uppercase;letter-spacing:.05em;padding:1px 5px;border-radius:3px;
+          border:1px solid var(--linea-fuerte);color:var(--tinta-2);white-space:nowrap}
+  .origen.norm{background:#fdf1e3;border-color:#e2bd8e;color:var(--alerta)}
+  .quitar{border:0;background:transparent;color:#c3c8d1;cursor:pointer;font-size:14px;line-height:1;padding:0 2px}
+  .quitar:hover{color:var(--error)}
+  tfoot td{border-top:1.5px solid var(--linea-fuerte);border-bottom:0;padding-top:6px;
+           font-size:11px;font-weight:600}
+  .total-ok{color:var(--ok)} .total-mal{color:var(--error)}
+
+  /* C / D */
+  .observaciones{border:1px solid var(--linea);min-height:46px;padding:6px 8px;font-size:12px}
+  .firmas{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:26px;margin-bottom:18px}
+  .firma{border-top:1px solid var(--tinta);padding-top:5px;font-size:11px;color:var(--tinta-2)}
+  .firma b{display:block;color:var(--tinta);font-size:12px;font-weight:600}
+  .pie{margin-top:auto;padding-top:6px;display:flex;justify-content:space-between;
+       border-top:1px solid var(--linea);font-size:9.5px;color:var(--tinta-2)}
+
+  /* hoja reservada */
+  .reservada{border:1px dashed var(--alerta);background:#fffaf3;padding:10px 12px;margin-top:14px}
+  .reservada h2{color:var(--alerta);margin-top:0}
+  .reservada p{margin:0 0 8px;font-size:11.5px;color:var(--tinta-2);line-height:1.5}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:11px;border:1px solid var(--linea-fuerte);border-radius:12px;padding:3px 10px;cursor:pointer;background:#fff}
+  .chip.on{background:#fdf1e3;border-color:#e2bd8e;color:var(--alerta);font-weight:600}
+
+  /* avisos de validación */
+  .avisos{margin-top:12px;font-size:12px}
+  .aviso{padding:6px 10px;border-left:3px solid;margin-bottom:5px;background:#f7f8fa}
+  .aviso.e{border-color:var(--error);color:var(--error)}
+  .aviso.w{border-color:var(--alerta);color:var(--alerta)}
+  .aviso.k{border-color:var(--ok);color:var(--ok)}
+
+  .solo-lectura .celda[contenteditable],.solo-lectura input{pointer-events:none}
+  .oculto{display:none!important}
+
+  @media print{
+    body{background:#fff}
+    .barra,.no-imprime{display:none!important}
+    .hoja{box-shadow:none;margin:0;width:auto;min-height:auto;padding:0}
+    @page{size:A4;margin:14mm 12mm}
+  }
+  @media (max-width:820px){ .hoja{width:auto;padding:14px} .identificacion{grid-template-columns:repeat(2,1fr)}
+    .campo:nth-child(4n){border-right:1px solid var(--linea)} .campo:nth-child(2n){border-right:0}
+    .campo:nth-child(n+5){border-bottom:1px solid var(--linea)} }
+</style>
+</head>
+<body>
+
+<div class="barra">
+  <strong>Maqueta CDA</strong>
+  <label class="estado" for="rol">Rol:</label>
+  <select id="rol">
+    <option value="academico">Académico o académica</option>
+    <option value="director">Director de Departamento</option>
+    <option value="comision">Comisión evaluadora</option>
+  </select>
+  <button id="btn-add" class="primario">+ Compromiso</button>
+  <button id="btn-val">Validar</button>
+  <button id="btn-res">Hoja reservada</button>
+  <button id="btn-print">Imprimir</button>
+  <span class="sep"></span>
+  <span class="estado" id="estado">borrador local</span>
+  <button id="btn-clear">Vaciar</button>
+</div>
+
+<div class="hoja" id="hoja">
+
+  <div class="encabezado">
+    <div class="marca">
+      Universidad de Santiago de Chile
+      <b>Convenio de Desempeño Académico</b>
+      Facultad de Ingeniería
+    </div>
+    <div class="periodo">Período evaluativo<b id="anio">2026</b>v1.0 · borrador</div>
+  </div>
+
+  <h2>A. Identificación</h2>
+  <div class="identificacion">
+    <div class="campo"><div class="et">Académico o académica</div><div class="va precargado">Nombre Apellido Apellido</div></div>
+    <div class="campo"><div class="et">Unidad académica</div><div class="va precargado">Depto. de Ingeniería Industrial</div></div>
+    <div class="campo"><div class="et">Jerarquía</div><div class="va precargado">Profesor Asociado</div></div>
+    <div class="campo"><div class="et">Jornada contractual</div><div class="va precargado">44 horas</div></div>
+    <div class="campo"><div class="et">Período</div><div class="va precargado">01-03-2026 al 28-02-2027</div></div>
+    <div class="campo"><div class="et">Estado</div><div class="va precargado" id="estado-doc">En formulación</div></div>
+    <div class="campo"><div class="et">Versión</div><div class="va precargado">1.0</div></div>
+    <div class="campo"><div class="et">Declaración de circunstancias</div><div class="va precargado" id="ind-res">No presentada</div></div>
+  </div>
+
+  <h2>B. Compromisos del período</h2>
+  <table id="tabla">
+    <colgroup>
+      <col style="width:25%"><col style="width:13%"><col style="width:20%"><col style="width:19%">
+      <col style="width:9%"><col style="width:10%"><col style="width:4%">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Actividad comprometida</th><th>Rol</th><th>Producto o resultado esperado</th>
+        <th>Evidencia</th><th class="num">Pond.</th><th>Origen</th><th class="no-imprime"></th>
+      </tr>
+    </thead>
+    <tbody id="cuerpo"></tbody>
+    <tfoot>
+      <tr><td colspan="4">Total ponderación comprometida</td>
+          <td class="num" id="total">0%</td><td colspan="2" id="total-nota"></td></tr>
+    </tfoot>
+  </table>
+
+  <h2>C. Observaciones del Director o Directora</h2>
+  <div class="observaciones celda vacio" id="obs" contenteditable="true"></div>
+
+  <h2>D. Formalización</h2>
+  <div class="firmas">
+    <div class="firma"><b>Nombre Apellido Apellido</b>Académico o académica · fecha</div>
+    <div class="firma"><b>Nombre Apellido</b>Director de Departamento · fecha</div>
+  </div>
+
+  <div class="reservada oculto no-imprime" id="reservada">
+    <h2>E. Declaración voluntaria de circunstancias del período</h2>
+    <p>Presentación facultativa. Su omisión no es antecedente desfavorable. Acceso reservado conforme al artículo 52:
+       la conocen el Director al formalizar y la comisión evaluadora. No se imprime con el convenio ni se incorpora a
+       reportes agregados. Su único efecto es ajustar el volumen de compromisos, no las exigencias de calidad ni la escala.</p>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div class="avisos no-imprime" id="avisos"></div>
+
+  <div class="pie">
+    <span>Convenio de Desempeño Académico · v1.0 · generado el <span id="fecha"></span></span>
+    <span>Página 1 de 1</span>
+  </div>
+</div>
+
+<script>
+/* ---- configuración editable ---- */
+const AREAS = ["Docencia","Investigación y desarrollo","Vinculación con el medio","Gestión académica","Perfeccionamiento"];
+const ROLES = ["Responsable","Coordinador","Colaborador","Investigador principal","Docente"];
+const CIRCUNSTANCIAS = ["Pre y postnatal","Permiso postnatal parental","Responsabilidades de cuidado",
+  "Licencia médica prolongada","Inicio de carrera tras el grado","Cambio o reducción de jornada"];
+
+const EJEMPLO = [
+ {area:0,act:"Dictación de asignatura Gestión de Operaciones (2 secciones)",rol:"Docente",
+  prod:"Cursos dictados y evaluados conforme a planeación docente",ev:"Planeación docente y actas de notas",p:30,norm:true},
+ {area:0,act:"Dirección de tres memorias de título",rol:"Responsable",
+  prod:"Memorias aprobadas por comisión",ev:"Actas de examen de título",p:10,norm:false},
+ {area:1,act:"Ejecución de proyecto Fondecyt Regular en curso",rol:"Investigador principal",
+  prod:"Informe de avance aprobado y un artículo enviado a revista indexada",ev:"Informe ANID y comprobante de envío",p:25,norm:false},
+ {area:1,act:"Codirección de tesis de doctorado",rol:"Colaborador",
+  prod:"Avance de tesis con estado aprobado",ev:"Informe de avance del programa",p:5,norm:false},
+ {area:2,act:"Curso de actualización para profesionales del sector productivo",rol:"Coordinador",
+  prod:"Curso ejecutado con evaluación de participantes",ev:"Programa, nómina y encuesta de cierre",p:8,norm:false},
+ {area:3,act:"Coordinación del comité curricular de la carrera",rol:"Coordinador",
+  prod:"Propuesta de ajuste curricular presentada al Consejo",ev:"Actas del comité y propuesta",p:15,norm:false},
+ {area:4,act:"Diplomado en docencia universitaria",rol:"Responsable",
+  prod:"Diplomado aprobado",ev:"Certificado de aprobación",p:7,norm:false}
+];
+
+const K = "cda_maqueta_v1";
+let filas = [], circ = [], rol = "academico";
+
+/* ---- persistencia ---- */
+function guardar(){
+  try{ localStorage.setItem(K, JSON.stringify({filas,circ,obs:document.getElementById("obs").innerText.trim()}));
+       marcar("guardado en este navegador"); }catch(e){ marcar("sin guardado local"); }
+}
+function cargar(){
+  try{
+    const d = JSON.parse(localStorage.getItem(K)||"null");
+    if(d && d.filas && d.filas.length){ filas=d.filas; circ=d.circ||[];
+      if(d.obs) document.getElementById("obs").innerText=d.obs; return true; }
+  }catch(e){}
+  return false;
+}
+let t; function marcar(txt){ const e=document.getElementById("estado"); e.textContent=txt;
+  clearTimeout(t); t=setTimeout(()=>e.textContent="borrador local",1800); }
+
+/* ---- render ---- */
+function esc(s){ return (s||"").replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c])); }
+
+function render(){
+  const cuerpo = document.getElementById("cuerpo");
+  cuerpo.innerHTML = "";
+  let total = 0;
+  AREAS.forEach((nombre,ai)=>{
+    const dela = filas.map((f,i)=>({f,i})).filter(o=>o.f.area===ai);
+    if(!dela.length) return;
+    const suma = dela.reduce((a,o)=>a+(+o.f.p||0),0);
+    total += suma;
+    const banda = document.createElement("tr");
+    banda.className = "banda";
+    banda.innerHTML = `<td colspan="7">${esc(nombre)}<span class="pct">${suma}%</span></td>`;
+    cuerpo.appendChild(banda);
+    dela.forEach(({f,i})=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML =
+        `<td><div class="celda ${f.act?"":"vacio"}" contenteditable data-i="${i}" data-c="act">${esc(f.act)}</div></td>`+
+        `<td><div class="celda ${f.rol?"":"vacio"}" contenteditable data-i="${i}" data-c="rol">${esc(f.rol)}</div></td>`+
+        `<td><div class="celda ${f.prod?"":"vacio"}" contenteditable data-i="${i}" data-c="prod">${esc(f.prod)}</div></td>`+
+        `<td><div class="celda ${f.ev?"":"vacio"}" contenteditable data-i="${i}" data-c="ev">${esc(f.ev)}</div></td>`+
+        `<td class="num"><span class="nowrap"><input class="pond" type="number" min="0" max="100" value="${+f.p||0}" data-i="${i}">%</span></td>`+
+        `<td><span class="origen ${f.norm?"norm":""}">${f.norm?"Normativo":"Propuesto"}</span></td>`+
+        `<td class="no-imprime"><button class="quitar" data-del="${i}" title="Eliminar">✕</button></td>`;
+      cuerpo.appendChild(tr);
+    });
+  });
+  if(!filas.length){
+    cuerpo.innerHTML = `<tr><td colspan="7" style="color:#9aa2af;padding:14px 6px">Sin compromisos. Usa “+ Compromiso”.</td></tr>`;
+  }
+  const tt = document.getElementById("total");
+  tt.textContent = total + "%";
+  tt.className = "num " + (total===100 ? "total-ok" : "total-mal");
+  document.getElementById("total-nota").textContent = total===100 ? "" : (total<100 ? "faltan "+(100-total)+"%" : "excede en "+(total-100)+"%");
+  document.getElementById("ind-res").textContent = circ.length ? "Presentada (reservada)" : "No presentada";
+  aplicarRol();
+}
+
+function renderChips(){
+  const c = document.getElementById("chips");
+  c.innerHTML = "";
+  CIRCUNSTANCIAS.forEach(x=>{
+    const b = document.createElement("button");
+    b.className = "chip" + (circ.includes(x) ? " on" : "");
+    b.textContent = x;
+    b.onclick = ()=>{ circ.includes(x) ? circ.splice(circ.indexOf(x),1) : circ.push(x); renderChips(); render(); guardar(); };
+    c.appendChild(b);
+  });
+}
+
+/* ---- roles ---- */
+function aplicarRol(){
+  const hoja = document.getElementById("hoja");
+  const obs  = document.getElementById("obs");
+  hoja.classList.toggle("solo-lectura", rol!=="academico");
+  obs.setAttribute("contenteditable", rol==="director");
+  obs.style.background = rol==="director" ? "#fffbe8" : "";
+  document.getElementById("btn-add").classList.toggle("oculto", rol!=="academico");
+  document.getElementById("btn-res").classList.toggle("oculto", rol==="comision");
+  if(rol==="comision") document.getElementById("reservada").classList.add("oculto");
+  document.getElementById("estado-doc").textContent =
+    rol==="academico" ? "En formulación" : rol==="director" ? "En revisión" : "Formalizado";
+}
+
+/* ---- validación ---- */
+function validar(){
+  const box = document.getElementById("avisos");
+  const msg = [];
+  const total = filas.reduce((a,f)=>a+(+f.p||0),0);
+  if(total!==100) msg.push(["e",`La suma de ponderaciones es ${total}% y debe ser 100%.`]);
+  const incompletas = filas.filter(f=>!f.prod.trim()||!f.ev.trim()).length;
+  if(incompletas) msg.push(["e",`${incompletas} compromiso(s) sin producto esperado o sin evidencia declarada.`]);
+  const sinrol = filas.filter(f=>!f.rol.trim()).length;
+  if(sinrol) msg.push(["e",`${sinrol} compromiso(s) sin rol asociado.`]);
+  if(!filas.some(f=>f.norm)) msg.push(["w","Ningún compromiso está marcado como exigencia normativa mínima."]);
+  if(filas.length>12) msg.push(["w",`${filas.length} compromisos: revisa la proporcionalidad, el convenio debe caber en una plana.`]);
+  if(!msg.length) msg.push(["k","El convenio cumple las condiciones mínimas para ser formalizado."]);
+  box.innerHTML = msg.map(([t,x])=>`<div class="aviso ${t}">${x}</div>`).join("");
+}
+
+/* ---- eventos ---- */
+document.addEventListener("input", e=>{
+  const t = e.target;
+  if(t.classList.contains("celda") && t.dataset.i!==undefined){
+    filas[+t.dataset.i][t.dataset.c] = t.innerText.trim(); guardar();
+  }else if(t.classList.contains("pond")){
+    filas[+t.dataset.i].p = Math.max(0, Math.min(100, +t.value||0));
+    const foco = document.activeElement === t;
+    render(); guardar();
+    if(foco){ const n = document.querySelector(`input.pond[data-i="${t.dataset.i}"]`); if(n){ n.focus(); n.select(); } }
+  }else if(t.id==="obs"){ guardar(); }
+});
+
+document.addEventListener("click", e=>{
+  const d = e.target.dataset.del;
+  if(d!==undefined){ filas.splice(+d,1); render(); guardar(); }
+});
+
+document.getElementById("btn-add").onclick = ()=>{
+  const area = filas.length ? filas[filas.length-1].area : 0;
+  filas.push({area, act:"", rol:"", prod:"", ev:"", p:0, norm:false});
+  render(); guardar();
+  const celdas = document.querySelectorAll('.celda[data-c="act"]');
+  if(celdas.length) celdas[celdas.length-1].focus();
+};
+document.getElementById("btn-val").onclick = validar;
+document.getElementById("btn-res").onclick = ()=> document.getElementById("reservada").classList.toggle("oculto");
+document.getElementById("btn-print").onclick = ()=> window.print();
+document.getElementById("btn-clear").onclick = ()=>{
+  filas = []; circ = []; document.getElementById("obs").innerText = "";
+  document.getElementById("avisos").innerHTML = "";
+  renderChips(); render(); guardar();
+};
+document.getElementById("rol").onchange = e=>{ rol = e.target.value; aplicarRol(); };
+
+/* ---- inicio ---- */
+if(!cargar()) filas = JSON.parse(JSON.stringify(EJEMPLO));
+document.getElementById("fecha").textContent = new Date().toLocaleDateString("es-CL");
+document.getElementById("anio").textContent = new Date().getFullYear();
+renderChips();
+render();
+</script>
+</body>
+</html>
