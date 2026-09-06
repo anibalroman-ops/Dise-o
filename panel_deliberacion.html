@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de Deliberación — Comisión</title>
+<style>
+  :root{
+    --primary:#4F46E5;
+    --primary-dark:#4338CA;
+    --primary-light:#F0F4FF;
+    --secondary:#3B82F6;
+    --success:#10B981;
+    --warning:#F59E0B;
+    --error:#EF4444;
+    --error-light:#FEE2E2;
+    --neutral:#6B7280;
+    --neutral-light:#9CA3AF;
+    --gray-50:#F9FAFB;
+    --gray-100:#F3F4F6;
+    --gray-200:#E5E7EB;
+    --gray-300:#D1D5DB;
+    --gray-400:#9CA3AF;
+    --gray-600:#4B5563;
+    --gray-700:#374151;
+    --gray-900:#111827;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:#F3F4F6;
+    color:#1F2937;
+    font-family:"Segoe UI","Inter",-apple-system,system-ui,Roboto,Arial,sans-serif;
+    font-size:14px;
+    line-height:1.6;
+  }
+
+  /* ========== Header ========== */
+  .header{
+    position:sticky;
+    top:0;
+    z-index:40;
+    background:#fff;
+    border-bottom:1px solid var(--gray-200);
+    box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    padding:14px 32px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:24px;
+  }
+  .header-logo{font-size:18px;font-weight:700;color:var(--primary)}
+  .header-right{display:flex;gap:12px;align-items:center}
+  .btn-descargar{
+    padding:8px 16px;
+    border:1px solid var(--primary);
+    background:var(--primary);
+    color:#fff;
+    border-radius:6px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .btn-descargar:hover{background:var(--primary-dark)}
+
+  /* ========== Contenedor ========== */
+  .contenedor{
+    max-width:1400px;
+    margin:0 auto;
+    padding:32px;
+  }
+
+  /* ========== Carga de Datos ========== */
+  .seccion-carga{
+    background:#fff;
+    border-radius:10px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    padding:28px 32px;
+    margin-bottom:32px;
+  }
+  .seccion-carga h2{
+    font-size:18px;
+    font-weight:700;
+    margin:0 0 16px;
+    color:var(--primary);
+  }
+  .carga-flex{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap}
+  .campo-archivo{flex:1;min-width:250px}
+  .campo-archivo label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--gray-600);
+    margin-bottom:6px;
+  }
+  .campo-archivo input{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--gray-300);
+    border-radius:6px;
+    font:inherit;
+    font-size:13px;
+  }
+  .btn-cargar{
+    padding:10px 20px;
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .btn-cargar:hover{background:var(--primary-dark)}
+  .btn-cargar:disabled{background:var(--gray-300);cursor:not-allowed}
+
+  .instruccion{
+    font-size:12px;
+    color:var(--neutral-light);
+    margin-top:8px;
+  }
+
+  /* ========== Estado de Carga ========== */
+  .estado-carga{
+    margin-top:16px;
+    padding:12px 16px;
+    border-radius:6px;
+    font-size:13px;
+  }
+  .estado-carga.exito{background:#DCFCE7;color:#15803D;border:1px solid #86EFAC}
+  .estado-carga.error{background:#FEE2E2;color:#DC2626;border:1px solid #FECACA}
+  .estado-carga.info{background:var(--primary-light);color:var(--primary);border:1px solid var(--primary)}
+
+  /* ========== Panel de Deliberación ========== */
+  .panel-deliberacion{
+    background:#fff;
+    border-radius:10px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    padding:28px 32px;
+  }
+  .panel-deliberacion.oculto{display:none!important}
+
+  .info-academico{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:16px;
+    padding:20px;
+    background:var(--gray-50);
+    border-radius:8px;
+    margin-bottom:32px;
+    font-size:13px;
+  }
+  .info-academico .campo{
+    display:flex;
+    justify-content:space-between;
+  }
+  .info-academico .label{
+    font-weight:700;
+    color:var(--gray-600);
+  }
+  .info-academico .valor{
+    font-weight:600;
+    color:var(--primary);
+  }
+
+  /* ========== Áreas de Deliberación ========== */
+  .area-deliberacion{
+    border:1px solid var(--gray-200);
+    border-radius:8px;
+    margin-bottom:24px;
+    overflow:hidden;
+  }
+  .area-encabezado{
+    background:var(--primary-light);
+    padding:16px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+  }
+  .area-encabezado:hover{background:#E0E7FF}
+  .area-nombre{
+    font-size:15px;
+    font-weight:700;
+    color:var(--primary);
+  }
+  .area-toggle{
+    font-size:12px;
+    color:var(--neutral-light);
+  }
+
+  .area-contenido{
+    padding:20px;
+    background:#fff;
+    display:none;
+  }
+  .area-contenido.visible{display:block}
+
+  /* ========== Evaluaciones Lado a Lado ========== */
+  .evaluaciones-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+    margin-bottom:24px;
+  }
+  .eval-card{
+    border:1px solid var(--gray-200);
+    border-radius:6px;
+    padding:16px;
+    background:var(--gray-50);
+  }
+  .eval-card-titulo{
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--gray-600);
+    margin-bottom:8px;
+  }
+  .eval-nivel{
+    font-size:28px;
+    font-weight:700;
+    color:var(--primary);
+    margin-bottom:4px;
+  }
+  .eval-categoria{
+    font-size:12px;
+    font-weight:600;
+    color:var(--primary);
+    margin-bottom:12px;
+  }
+  .eval-fund{
+    font-size:12px;
+    color:var(--gray-700);
+    line-height:1.5;
+    border-left:3px solid var(--gray-300);
+    padding-left:10px;
+  }
+
+  /* ========== Divergencia ========== */
+  .divergencia{
+    background:#FEF3C7;
+    border-left:4px solid var(--warning);
+    padding:12px 16px;
+    border-radius:4px;
+    font-size:12px;
+    margin-bottom:20px;
+    color:var(--gray-700);
+  }
+  .divergencia b{color:var(--warning)}
+  .divergencia.consenso{background:#DCFCE7;border-color:var(--success)}
+  .divergencia.consenso b{color:var(--success)}
+
+  /* ========== Panel de Decisión ========== */
+  .panel-decision{
+    background:var(--gray-50);
+    border-radius:6px;
+    padding:16px;
+    border:1px solid var(--gray-200);
+  }
+  .decision-titulo{
+    font-size:13px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--gray-600);
+    margin-bottom:12px;
+  }
+
+  .escala-decision{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .nivel-boton{
+    padding:12px 8px;
+    border:2px solid var(--gray-300);
+    background:#fff;
+    border-radius:6px;
+    cursor:pointer;
+    text-align:center;
+    font-weight:600;
+    transition:all 0.2s;
+  }
+  .nivel-boton:hover{border-color:var(--primary)}
+  .nivel-boton.sel{
+    background:var(--primary);
+    color:#fff;
+    border-color:var(--primary);
+  }
+  .nivel-boton[data-n="0"]{color:#EF4444}
+  .nivel-boton[data-n="1"]{color:#F59E0B}
+  .nivel-boton[data-n="2"]{color:#6B7280}
+  .nivel-boton[data-n="3"]{color:#3B82F6}
+  .nivel-boton[data-n="4"]{color:#10B981}
+
+  .notas-deliberacion{
+    margin-bottom:16px;
+  }
+  .notas-deliberacion label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--gray-600);
+    margin-bottom:6px;
+  }
+  .notas-deliberacion textarea{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--gray-300);
+    border-radius:6px;
+    font:inherit;
+    font-size:12px;
+    min-height:60px;
+    resize:vertical;
+  }
+
+  /* ========== Resultado Preliminar ========== */
+  .resultado-area{
+    background:var(--primary-light);
+    padding:12px 16px;
+    border-radius:6px;
+    margin-top:12px;
+    font-size:12px;
+    border-left:4px solid var(--primary);
+  }
+  .resultado-area b{color:var(--primary)}
+
+  /* ========== CF Preview ========== */
+  .cf-preview{
+    background:var(--primary-light);
+    border:2px solid var(--primary);
+    border-radius:8px;
+    padding:20px;
+    margin:32px 0;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+    align-items:center;
+  }
+  .cf-numero{
+    font-size:48px;
+    font-weight:700;
+    color:var(--primary);
+    line-height:1;
+  }
+  .cf-texto{
+    font-size:13px;
+    color:var(--gray-700);
+    line-height:1.6;
+  }
+  .cf-texto b{color:var(--primary)}
+
+  /* ========== Panel de Firmas ========== */
+  .panel-firmas{
+    background:var(--gray-50);
+    border:1px solid var(--gray-200);
+    border-radius:8px;
+    padding:20px;
+    margin-top:32px;
+  }
+  .panel-firmas h3{
+    font-size:14px;
+    font-weight:700;
+    margin:0 0 16px;
+    color:var(--gray-900);
+  }
+  .firmas-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+  }
+  .firma-campo{
+    border:1px solid var(--gray-300);
+    border-radius:6px;
+    padding:16px;
+    background:#fff;
+  }
+  .firma-label{
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--gray-600);
+    margin-bottom:8px;
+  }
+  .firma-input{
+    width:100%;
+    padding:8px 10px;
+    border:1px solid var(--gray-300);
+    border-radius:4px;
+    font:inherit;
+    font-size:12px;
+    margin-bottom:8px;
+  }
+  .firma-linea{
+    border-top:2px solid var(--gray-900);
+    margin-top:8px;
+    padding-top:4px;
+    font-size:10px;
+    color:var(--gray-600);
+  }
+
+  /* ========== Botones Finales ========== */
+  .botones-finales{
+    display:flex;
+    gap:12px;
+    margin-top:32px;
+    justify-content:flex-end;
+  }
+  .btn-primario{
+    padding:12px 24px;
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    font-weight:600;
+    cursor:pointer;
+    font-size:14px;
+  }
+  .btn-primario:hover{background:var(--primary-dark)}
+  .btn-primario:disabled{background:var(--gray-300);cursor:not-allowed}
+
+  /* ========== Responsive ========== */
+  @media (max-width:1200px){
+    .evaluaciones-grid{grid-template-columns:1fr}
+    .firmas-grid{grid-template-columns:1fr}
+    .cf-preview{grid-template-columns:1fr}
+  }
+  @media (max-width:768px){
+    .header{flex-direction:column;align-items:flex-start;gap:12px}
+    .contenedor{padding:16px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== Header ========== -->
+<div class="header">
+  <div class="header-logo">📋 Panel de Deliberación</div>
+  <div class="header-right">
+    <button class="btn-descargar" id="btn-descargar" disabled>Descargar Resultado (PDF)</button>
+  </div>
+</div>
+
+<!-- ========== Contenedor ========== -->
+<div class="contenedor">
+
+  <!-- Carga de Datos -->
+  <div class="seccion-carga">
+    <h2>Cargar datos de deliberación</h2>
+    <div class="carga-flex">
+      <div class="campo-archivo" style="flex:1;min-width:280px">
+        <label for="archivo-json">Archivo JSON (exportado de Google Sheets)</label>
+        <input id="archivo-json" type="file" accept=".json">
+        <div class="instruccion">Descargue el archivo JSON desde Google Sheets y seleccione aquí.</div>
+      </div>
+      <button class="btn-cargar" id="btn-cargar-datos">Cargar datos</button>
+    </div>
+    <div id="msg-carga"></div>
+  </div>
+
+  <!-- Panel de Deliberación (oculto hasta cargar datos) -->
+  <div class="panel-deliberacion oculto" id="panel-deliberacion">
+
+    <h1 style="font-size:24px;margin:0 0 8px;color:#1F2937">Deliberación de la Comisión</h1>
+    <p style="margin:0 0 24px;color:var(--neutral);font-size:14px">
+      Revisen lado a lado las 3 evaluaciones. Por cada área, discutan y decidan el nivel final.
+    </p>
+
+    <!-- Información del Académico -->
+    <div class="info-academico">
+      <div class="campo"><span class="label">Académico:</span><span class="valor" id="info-nombre">—</span></div>
+      <div class="campo"><span class="label">Unidad:</span><span class="valor" id="info-unidad">—</span></div>
+      <div class="campo"><span class="label">Jerarquía:</span><span class="valor" id="info-jerarquia">—</span></div>
+      <div class="campo"><span class="label">Jornada:</span><span class="valor" id="info-jornada">—</span></div>
+    </div>
+
+    <!-- Áreas de Deliberación (se genera dinámicamente) -->
+    <div id="areas-contenedor"></div>
+
+    <!-- CF Preview -->
+    <div class="cf-preview">
+      <div>
+        <div class="cf-numero" id="cf-final">—</div>
+        <div style="font-size:11px;color:var(--neutral-light)" id="cf-estado"></div>
+      </div>
+      <div class="cf-texto">
+        Suma ponderada de los niveles acordados por la comisión, usando las horas comprometidas (Art. 35).
+        <br><b>Esta es la calificación final.</b>
+      </div>
+    </div>
+
+    <!-- Panel de Firmas -->
+    <div class="panel-firmas">
+      <h3>Firma de la comisión — constancia de deliberación (Art. 52, Título IX)</h3>
+      <div class="firmas-grid">
+        <div class="firma-campo">
+          <div class="firma-label">Comisionado 1</div>
+          <input type="text" class="firma-input" id="firma-1-nombre" placeholder="Nombre completo">
+          <input type="text" class="firma-input" id="firma-1-email" placeholder="correo@usach.cl">
+          <div class="firma-linea">Firma: ____________________</div>
+          <div style="font-size:10px;color:var(--neutral-light);margin-top:4px" id="firma-1-hora"></div>
+        </div>
+        <div class="firma-campo">
+          <div class="firma-label">Comisionado 2</div>
+          <input type="text" class="firma-input" id="firma-2-nombre" placeholder="Nombre completo">
+          <input type="text" class="firma-input" id="firma-2-email" placeholder="correo@usach.cl">
+          <div class="firma-linea">Firma: ____________________</div>
+          <div style="font-size:10px;color:var(--neutral-light);margin-top:4px" id="firma-2-hora"></div>
+        </div>
+        <div class="firma-campo">
+          <div class="firma-label">Comisionado 3</div>
+          <input type="text" class="firma-input" id="firma-3-nombre" placeholder="Nombre completo">
+          <input type="text" class="firma-input" id="firma-3-email" placeholder="correo@usach.cl">
+          <div class="firma-linea">Firma: ____________________</div>
+          <div style="font-size:10px;color:var(--neutral-light);margin-top:4px" id="firma-3-hora"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones Finales -->
+    <div class="botones-finales">
+      <button class="btn-primario" id="btn-generar-resultado">Generar y descargar resultado</button>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+/* ========================================================================
+   Panel de Deliberación — Sistema independiente HTML
+   ======================================================================== */
+
+const AREAS = [
+  "Docencia", "Investigación y desarrollo", "Extensión - VIME",
+  "Extensión - Educación continua", "Asistencia técnica",
+  "Administración académica", "Perfeccionamiento"
+];
+
+const RUBRICA = [
+  {n:0, cat:"Insuficiente", desc:"No permite reconocer el cumplimiento mínimo de lo comprometido."},
+  {n:1, cat:"Condicional", desc:"Cumplimiento parcial, irregular o débil."},
+  {n:2, cat:"Aceptable", desc:"Cumplimiento mínimo reconocible."},
+  {n:3, cat:"Bueno", desc:"Cumple plenamente lo esperado para la jerarquía."},
+  {n:4, cat:"Sobresaliente", desc:"Supera de manera verificable lo esperado."}
+];
+
+let datosCargados = null;
+const deliberaciones = {}; // {area: {nivel, notas}}
+
+// Inicializar deliberaciones
+AREAS.forEach(a => {
+  deliberaciones[a] = {nivel: null, notas: ""};
+});
+
+/* ---- Carga de Datos ---- */
+document.getElementById("btn-cargar-datos").onclick = ()=>{
+  const file = document.getElementById("archivo-json").files[0];
+  if(!file){
+    mostrarMensaje("Seleccione un archivo JSON", "error");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      datosCargados = JSON.parse(e.target.result);
+      validarDatos(datosCargados);
+      renderizarPanelDeliberacion();
+      mostrarMensaje("✓ Datos cargados correctamente", "exito");
+      document.getElementById("panel-deliberacion").classList.remove("oculto");
+    }catch(err){
+      mostrarMensaje("Error al cargar JSON: " + err.message, "error");
+    }
+  };
+  reader.readAsText(file);
+};
+
+function validarDatos(datos){
+  if(!datos.evaluaciones || datos.evaluaciones.length !== 3){
+    throw new Error("Debe haber exactamente 3 evaluaciones");
+  }
+  if(!datos.academico){
+    throw new Error("Faltan datos del académico");
+  }
+}
+
+function mostrarMensaje(msg, tipo){
+  const div = document.getElementById("msg-carga");
+  div.innerHTML = `<div class="estado-carga ${tipo}">${msg}</div>`;
+}
+
+/* ---- Renderizar Panel de Deliberación ---- */
+function renderizarPanelDeliberacion(){
+  // Información académico
+  document.getElementById("info-nombre").textContent = datosCargados.academico.nombre || "—";
+  document.getElementById("info-unidad").textContent = datosCargados.academico.unidad || "—";
+  document.getElementById("info-jerarquia").textContent = datosCargados.academico.jerarquia || "—";
+  document.getElementById("info-jornada").textContent = datosCargados.academico.jornada || "—";
+
+  // Áreas de deliberación
+  const contenedor = document.getElementById("areas-contenedor");
+  contenedor.innerHTML = "";
+
+  AREAS.forEach((area, idx)=>{
+    const evals = datosCargados.evaluaciones.map(e=> ({
+      comisionado: e.comisionado.nombre,
+      nivel: e.evaluaciones.areas[idx].nivel,
+      fund: e.evaluaciones.areas[idx].fundamento
+    }));
+
+    // Calcular divergencia
+    const niveles = evals.map(e=> e.nivel);
+    const minN = Math.min(...niveles);
+    const maxN = Math.max(...niveles);
+    const divergencia = maxN - minN;
+
+    const html = `
+      <div class="area-deliberacion">
+        <div class="area-encabezado" onclick="this.nextElementSibling.classList.toggle('visible')">
+          <div class="area-nombre">${area}</div>
+          <div class="area-toggle">▼</div>
+        </div>
+        <div class="area-contenido visible">
+
+          <!-- Evaluaciones lado a lado -->
+          <div class="evaluaciones-grid">
+            ${evals.map((e,i)=> `
+              <div class="eval-card">
+                <div class="eval-card-titulo">Comisionado ${i+1}</div>
+                <div class="eval-nivel">${e.nivel}</div>
+                <div class="eval-categoria">${RUBRICA[e.nivel].cat}</div>
+                <div class="eval-fund">"${e.fund}"</div>
+              </div>
+            `).join("")}
+          </div>
+
+          <!-- Divergencia -->
+          <div class="divergencia ${divergencia <= 1 ? 'consenso' : ''}">
+            <b>${divergencia === 0 ? 'Consenso total' : divergencia === 1 ? 'Consenso moderado' : 'Discrepancia significativa'}</b>
+            ${divergencia > 0 ? ` (rango: ${minN}-${maxN})` : ''}
+          </div>
+
+          <!-- Panel de Decisión -->
+          <div class="panel-decision">
+            <div class="decision-titulo">Decisión de la comisión</div>
+
+            <div class="escala-decision" data-area="${area}">
+              ${RUBRICA.map(r=> `
+                <button class="nivel-boton" data-n="${r.n}" data-area="${area}" onclick="seleccionarNivel('${area}', ${r.n})">
+                  <div>${r.n}</div>
+                  <div style="font-size:9px;text-transform:uppercase">${r.cat}</div>
+                </button>
+              `).join("")}
+            </div>
+
+            <div class="notas-deliberacion">
+              <label for="notas-${idx}">Notas de la comisión</label>
+              <textarea id="notas-${idx}" placeholder="Argumentos principales de la decisión..." onchange="guardarNotas('${area}', this.value)"></textarea>
+            </div>
+
+            <div class="resultado-area">
+              <b>Nivel acordado:</b> <span id="resultado-${area}">No decidido</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    contenedor.innerHTML += html;
+  });
+
+  // Inicializar firmas con nombres
+  datosCargados.evaluaciones.forEach((e, i)=>{
+    const num = i + 1;
+    document.getElementById(`firma-${num}-nombre`).value = e.comisionado.nombre;
+    document.getElementById(`firma-${num}-email`).value = e.comisionado.correo;
+    document.getElementById(`firma-${num}-hora`).textContent = e.timestamp ? new Date(e.timestamp).toLocaleString("es-CL") : "";
+  });
+
+  // Habilitar botón descargar
+  document.getElementById("btn-descargar").disabled = false;
+}
+
+function seleccionarNivel(area, nivel){
+  deliberaciones[area].nivel = nivel;
+
+  // Actualizar UI
+  document.querySelectorAll(`button[data-area="${area}"]`).forEach(b=> {
+    b.classList.toggle("sel", +b.dataset.n === nivel);
+  });
+
+  document.getElementById(`resultado-${area}`).textContent = `${nivel} — ${RUBRICA[nivel].cat}`;
+  calcularCF();
+}
+
+function guardarNotas(area, notas){
+  deliberaciones[area].notas = notas;
+}
+
+function calcularCF(){
+  const horas = datosCargados.academico.horas_por_area || [14,10,4,3,3,7,3];
+  const totalH = horas.reduce((a,b)=>a+b, 0);
+
+  let suma = 0, hechas = 0;
+  AREAS.forEach((a, i)=>{
+    if(deliberaciones[a].nivel !== null){
+      suma += deliberaciones[a].nivel * (horas[i] / totalH);
+      hechas++;
+    }
+  });
+
+  const cf = hechas ? suma.toFixed(2) : "—";
+  document.getElementById("cf-final").textContent = cf;
+  document.getElementById("cf-estado").textContent = hechas === AREAS.length ? "Cálculo completo" : `Cálculo parcial: ${hechas}/${AREAS.length} áreas`;
+}
+
+document.getElementById("btn-generar-resultado").onclick = ()=>{
+  // Validar que evaluó todas las áreas
+  const sinEvaluar = AREAS.filter(a=> deliberaciones[a].nivel === null);
+  if(sinEvaluar.length > 0){
+    alert(`Falta evaluar: ${sinEvaluar.join(", ")}`);
+    return;
+  }
+
+  // Descargar resultado como JSON
+  const resultado = {
+    timestamp: new Date().toISOString(),
+    academico: datosCargados.academico,
+    deliberaciones: deliberaciones,
+    cf_final: parseFloat(document.getElementById("cf-final").textContent),
+    firmas: {
+      comisionado1: {nombre: document.getElementById("firma-1-nombre").value, email: document.getElementById("firma-1-email").value},
+      comisionado2: {nombre: document.getElementById("firma-2-nombre").value, email: document.getElementById("firma-2-email").value},
+      comisionado3: {nombre: document.getElementById("firma-3-nombre").value, email: document.getElementById("firma-3-email").value}
+    }
+  };
+
+  const blob = new Blob([JSON.stringify(resultado, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `resultado_deliberacion_${datosCargados.academico.nombre?.replace(/ /g, "_")}_${new Date().toISOString().split("T")[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  alert("✓ Resultado descargado. Próximo paso: compartir con Secretaría Técnica para integración en expediente.");
+};
+</script>
+</body>
+</html>
