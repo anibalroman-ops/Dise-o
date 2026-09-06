@@ -1079,14 +1079,31 @@
 
   <!-- ================= PANTALLA ENVIADO ================= -->
   <div class="tarjeta enviado oculto" id="pantalla-enviado">
-    <div class="icono">✓</div>
-    <h1>Evaluación enviada</h1>
-    <p class="sub">Se registró su calificación por área, sus fundamentos y su tiempo de evaluación. Quedará reservada
-       hasta la deliberación conjunta de la comisión.</p>
+    <div class="icono" id="icono-estado">✓</div>
+    <h1 id="titulo-enviado">Evaluación completada</h1>
+    <p class="sub" id="sub-enviado">Su evaluación está lista. Ahora debe enviarla a Google Sheets para que la comisión pueda consolidar las 3 evaluaciones y deliberar.</p>
+
+    <h2>Envío a Google Sheets</h2>
+    <div class="campo-form">
+      <label for="gs-url">URL del Google Apps Script (pegue aquí la URL que le dió la Secretaría Técnica)</label>
+      <input id="gs-url" type="text" placeholder="https://script.google.com/macros/d/...">
+      <div style="font-size:11px;color:var(--neutral-light);margin-top:4px">
+        Ejemplo: https://script.google.com/macros/d/1abc2def3ghi4jkl/usercache
+      </div>
+    </div>
+
+    <div style="margin-top:16px;display:flex;gap:12px">
+      <button class="primario" id="btn-enviar-gs">Enviar evaluación a Google Sheets</button>
+      <span id="msg-gs" style="color:var(--neutral-light);font-size:12px;align-self:center"></span>
+    </div>
+
+    <div id="resultado-gs" style="margin-top:16px"></div>
+
     <div class="nota" style="text-align:left;max-width:620px;margin:20px auto 0">
-      Próximo paso, aún por diseñar: cuando los tres comisionados envíen su evaluación, la Secretaría Técnica
-      consolidará los niveles por área, calculará la divergencia entre evaluadores antes de cualquier ajuste y
-      convocará a la deliberación conjunta que fija el nivel definitivo y la calificación final (Art. 35 y Título IX).
+      <b>Próximo paso:</b> Cuando los tres comisionados hayan enviado su evaluación, la Secretaría Técnica les compartirá el Google Sheet con:
+      <br>• <b>Consolidación:</b> sus 3 evaluaciones lado a lado
+      <br>• <b>Deliberación:</b> panel para que discutan y decidan juntos el nivel final de cada área
+      <br>• <b>Resultado:</b> calificación final (Art. 35 y Título IX)
     </div>
   </div>
 
@@ -1444,6 +1461,94 @@ document.getElementById("btn-enviar").onclick = ()=>{
   document.querySelectorAll(".paso-c").forEach(el=> el.classList.add("oculto"));
   document.getElementById("stepper").classList.add("oculto");
   document.getElementById("pantalla-enviado").classList.remove("oculto");
+  inicioEnvio = Date.now();
+};
+
+/* ---- Envío a Google Sheets ---- */
+let inicioEnvio = null;
+
+function construirPayload(){
+  const com = {
+    nombre: document.getElementById("c-nombre").value,
+    correo: document.getElementById("c-correo").value,
+    unidad: document.getElementById("c-unidad").value,
+    tipo: document.getElementById("c-tipo").value,
+    calidad: document.querySelector('input[name="calidad"]:checked').value
+  };
+
+  const evals = AREAS.map((a,i)=>({
+    nombre: a.area,
+    nivel: evalArea[i].n,
+    fundamento: evalArea[i].fund,
+    retroalimentacion: evalArea[i].retro
+  }));
+
+  const s = Math.floor((Date.now()-inicioEnvio)/1000);
+  const mm = String(Math.floor(s/60)).padStart(2,"0"), ss = String(s%60).padStart(2,"0");
+
+  return {
+    timestamp: new Date().toISOString(),
+    comisionado: com,
+    evaluaciones: {
+      areas: evals,
+      tiempo_evaluacion: mm+":"+ss,
+      comprende_horas: document.getElementById("chk-comp1").checked,
+      comprende_circunstancias: document.getElementById("chk-comp2").checked,
+      incidentes: incidentes
+    }
+  };
+}
+
+document.getElementById("btn-enviar-gs").onclick = ()=>{
+  const url = document.getElementById("gs-url").value.trim();
+  if(!url){ alert("Pegue la URL del Google Apps Script antes de continuar."); return; }
+
+  const btn = document.getElementById("btn-enviar-gs");
+  const msg = document.getElementById("msg-gs");
+  const res = document.getElementById("resultado-gs");
+
+  btn.disabled = true;
+  msg.textContent = "Enviando...";
+  res.innerHTML = "";
+
+  const payload = construirPayload();
+
+  fetch(url, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  })
+  .then(r=> r.json())
+  .then(data=>{
+    if(data.success){
+      document.getElementById("icono-estado").textContent = "✓";
+      document.getElementById("titulo-enviado").textContent = "¡Evaluación enviada con éxito!";
+      document.getElementById("sub-enviado").textContent = "Sus datos llegaron a Google Sheets. La Secretaría Técnica verá su evaluación en la hoja 'Datos brutos' y la consolidará con las otras dos.";
+      res.innerHTML = `<div class="aviso-item k" style="text-align:left">
+        <b>✓ Enviado correctamente</b><br>
+        Timestamp: ${payload.timestamp}<br>
+        Comisionado: ${payload.comisionado.nombre}<br>
+        7 áreas evaluadas
+      </div>`;
+      btn.style.display = "none";
+      document.getElementById("gs-url").disabled = true;
+    } else {
+      throw new Error(data.error);
+    }
+  })
+  .catch(err=>{
+    document.getElementById("icono-estado").textContent = "⚠";
+    document.getElementById("titulo-enviado").textContent = "Error al enviar";
+    res.innerHTML = `<div class="aviso-item e" style="text-align:left">
+      <b>✗ Error</b><br>
+      ${err.message}<br><br>
+      <b>Soluciones:</b><br>
+      • Verifique que la URL es correcta (comienza con https://script.google.com)<br>
+      • Verifique que la comisión compartió el enlace correctamente<br>
+      • Intente nuevamente
+    </div>`;
+    btn.disabled = false;
+    msg.textContent = "";
+  });
 };
 
 /* ---- navegación genérica ---- */
