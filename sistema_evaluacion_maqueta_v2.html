@@ -1005,6 +1005,8 @@
       <tbody id="cuerpo-ant"></tbody>
     </table>
 
+    <div class="nota oculto" id="nota-excluidas" style="border-left-color:var(--warning);background:#FFFBF0"></div>
+
     <div class="nota">
       La diferencia entre horas comprometidas y realizadas se presenta como antecedente del período (Art. 36) y no
       determina por sí sola el nivel de desempeño. El nivel se asigna con la Rúbrica General del Anexo I, mediante el
@@ -1322,10 +1324,14 @@ function renderResumen(){
   document.getElementById("r-phr").textContent = pct(thr)+"%";
 }
 
+function areaAplicable(a){ return a.hr > 0; }
+
 function renderAntecedentes(){
   const cuerpo = document.getElementById("cuerpo-ant");
   cuerpo.innerHTML = "";
+  const excluidas = [];
   AREAS.forEach((a,i)=>{
+    if(!areaAplicable(a)){ excluidas.push(a); return; }
     const banda = document.createElement("tr");
     banda.className = "area-banda";
     const ev = evalArea[i];
@@ -1344,21 +1350,36 @@ function renderAntecedentes(){
       cuerpo.appendChild(tr);
     });
   });
+
+  const notaExcl = document.getElementById("nota-excluidas");
+  if(excluidas.length){
+    notaExcl.innerHTML = `<b>Áreas sin actividad realizada en el período (no se evalúan ni afectan la calificación):</b> `+
+      excluidas.map(a=> esc(a.area) + ` (${a.hc} h comprometidas)`).join(", ") + ".";
+    notaExcl.classList.remove("oculto");
+  } else {
+    notaExcl.classList.add("oculto");
+  }
+
   document.getElementById("txt-circ").textContent = CIRCUNSTANCIAS_DECLARADAS.length
     ? "El académico declaró circunstancias del período que ajustaron el volumen de compromisos al formalizar el convenio: " + CIRCUNSTANCIAS_DECLARADAS.join(", ") + ". No afecta la exigencia de calidad ni la escala de evaluación."
     : "No se registraron circunstancias declaradas para este período.";
-  const hechas = evalArea.filter(e=>e.n!==null).length;
-  document.getElementById("avance").textContent = `${hechas} de ${AREAS.length} áreas evaluadas`;
+  const aplicables = AREAS.filter(areaAplicable);
+  const hechas = AREAS.reduce((n,a,i)=> areaAplicable(a) && evalArea[i].n!==null ? n+1 : n, 0);
+  document.getElementById("avance").textContent = `${hechas} de ${aplicables.length} áreas evaluadas`;
 }
 
 function calcularCF(){
-  const totalH = AREAS.reduce((a,x)=>a+x.hc,0);
+  const aplicables = AREAS.filter(areaAplicable);
+  const totalH = aplicables.reduce((a,x)=>a+x.hc,0);
   let asignado = 0, suma = 0;
-  AREAS.forEach((a,i)=>{ if(evalArea[i].n!==null){ suma += evalArea[i].n * (a.hc/totalH); asignado++; } });
+  AREAS.forEach((a,i)=>{
+    if(!areaAplicable(a)) return;
+    if(evalArea[i].n!==null){ suma += evalArea[i].n * (a.hc/totalH); asignado++; }
+  });
   const el = document.getElementById("cf-valor");
   el.textContent = asignado ? suma.toFixed(2) : "—";
   document.getElementById("cf-estado").textContent =
-    asignado===0 ? "" : asignado < AREAS.length ? `cálculo parcial · ${asignado} de ${AREAS.length} áreas` : "cálculo completo";
+    asignado===0 ? "" : asignado < aplicables.length ? `cálculo parcial · ${asignado} de ${aplicables.length} áreas` : "cálculo completo";
 }
 
 /* ---- modal de evaluación ---- */
@@ -1446,7 +1467,7 @@ function renderIncidentes(){
 
 function validarP2(){
   const msg = [];
-  evalArea.forEach((e,i)=>{ if(e.n===null) msg.push(["e", `${AREAS[i].area}: falta evaluar (botón «Evaluar» en el paso 2).`]); });
+  evalArea.forEach((e,i)=>{ if(areaAplicable(AREAS[i]) && e.n===null) msg.push(["e", `${AREAS[i].area}: falta evaluar (botón «Evaluar» en el paso 2).`]); });
   if(!document.getElementById("chk-comp1").checked || !document.getElementById("chk-comp2").checked)
     msg.push(["e","Debe confirmar que comprendió las reglas del período antes de enviar."]);
   if(!msg.length) msg.push(["k","Todo listo para enviar su evaluación."]);
@@ -1476,12 +1497,15 @@ function construirPayload(){
     calidad: document.querySelector('input[name="calidad"]:checked').value
   };
 
-  const evals = AREAS.map((a,i)=>({
-    nombre: a.area,
-    nivel: evalArea[i].n,
-    fundamento: evalArea[i].fund,
-    retroalimentacion: evalArea[i].retro
-  }));
+  const evals = AREAS
+    .map((a,i)=>({a,i}))
+    .filter(({a})=> areaAplicable(a))
+    .map(({a,i})=>({
+      nombre: a.area,
+      nivel: evalArea[i].n,
+      fundamento: evalArea[i].fund,
+      retroalimentacion: evalArea[i].retro
+    }));
 
   const s = Math.floor((Date.now()-inicioEnvio)/1000);
   const mm = String(Math.floor(s/60)).padStart(2,"0"), ss = String(s%60).padStart(2,"0");
@@ -1527,7 +1551,7 @@ document.getElementById("btn-enviar-gs").onclick = ()=>{
         <b>✓ Enviado correctamente</b><br>
         Timestamp: ${payload.timestamp}<br>
         Comisionado: ${payload.comisionado.nombre}<br>
-        7 áreas evaluadas
+        ${payload.evaluaciones.areas.length} áreas evaluadas
       </div>`;
       btn.style.display = "none";
       document.getElementById("gs-url").disabled = true;

@@ -49,12 +49,6 @@
             "fundamento": "Ha dictado cursos de educación continua pertinentes a su disciplina, con participación regular de profesionales."
           },
           {
-            "nombre": "Asistencia técnica",
-            "nivel": 1,
-            "categoria": "Deficiente",
-            "fundamento": "Participación limitada en labores de asesoría técnica. No se registran proyectos o consultoría significativa."
-          },
-          {
             "nombre": "Administración académica",
             "nivel": 3,
             "categoria": "Bueno",
@@ -101,12 +95,6 @@
             "fundamento": "Docencia regular en programas de educación continua. Diseña cursos pertinentes."
           },
           {
-            "nombre": "Asistencia técnica",
-            "nivel": 0,
-            "categoria": "Ausente",
-            "fundamento": "No registra participación en asesorías técnicas o consultoría durante el período."
-          },
-          {
             "nombre": "Administración académica",
             "nivel": 3,
             "categoria": "Bueno",
@@ -151,12 +139,6 @@
             "nivel": 3,
             "categoria": "Bueno",
             "fundamento": "Contribuye regularmente a programas de educación continua."
-          },
-          {
-            "nombre": "Asistencia técnica",
-            "nivel": 0,
-            "categoria": "Ausente",
-            "fundamento": "No hay registros de participación en asesorías técnicas o consultorías."
           },
           {
             "nombre": "Administración académica",

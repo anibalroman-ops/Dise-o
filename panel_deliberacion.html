@@ -226,6 +226,15 @@
   }
   .resumen-tabla tbody tr:hover{background:var(--primary-light)}
   .resumen-tabla tbody tr:last-child td{border-bottom:none}
+  .nota-excluidas{
+    font-size:12px;
+    color:var(--gray-700);
+    background:#FFFBF0;
+    border-top:1px solid var(--gray-200);
+    padding:12px 16px;
+    line-height:1.6;
+  }
+  .nota-excluidas b{color:var(--warning)}
   .resumen-area-nombre{
     font-weight:600;
     color:var(--gray-900);
@@ -609,6 +618,7 @@
           <tbody id="resumen-tbody"></tbody>
         </table>
       </div>
+      <div class="nota-excluidas oculto" id="nota-excluidas"></div>
     </div>
 
     <!-- Áreas de Deliberación (se genera dinámicamente) -->
@@ -668,11 +678,17 @@
    Panel de Deliberación — Sistema independiente HTML
    ======================================================================== */
 
-const AREAS = [
+// Lista completa de referencia. Las áreas realmente deliberadas se calculan
+// al cargar los datos (calcularAreasAplicables), porque un área que el
+// académico no ejecutó en el período (0 horas realizadas) no se evalúa ni
+// se pondera: no aparece y no penaliza la calificación final.
+const AREAS_REFERENCIA = [
   "Docencia", "Investigación y desarrollo", "Extensión - VIME",
   "Extensión - Educación continua", "Asistencia técnica",
   "Administración académica", "Perfeccionamiento"
 ];
+let AREAS = [];
+let areasExcluidas = [];
 
 const RUBRICA = [
   {n:0, cat:"Insuficiente", desc:"No permite reconocer el cumplimiento mínimo de lo comprometido."},
@@ -683,12 +699,7 @@ const RUBRICA = [
 ];
 
 let datosCargados = null;
-const deliberaciones = {}; // {area: {nivel, notas}}
-
-// Inicializar deliberaciones
-AREAS.forEach(a => {
-  deliberaciones[a] = {nivel: null, notas: ""};
-});
+let deliberaciones = {}; // {area: {nivel, notas}}
 
 /* ---- Carga de Datos ---- */
 document.getElementById("btn-cargar-datos").onclick = ()=>{
@@ -703,6 +714,7 @@ document.getElementById("btn-cargar-datos").onclick = ()=>{
     try{
       datosCargados = JSON.parse(e.target.result);
       validarDatos(datosCargados);
+      calcularAreasAplicables(datosCargados);
       renderizarPanelDeliberacion();
       mostrarMensaje("✓ Datos cargados correctamente", "exito");
       document.getElementById("panel-deliberacion").classList.remove("oculto");
@@ -720,6 +732,32 @@ function validarDatos(datos){
   if(!datos.academico){
     throw new Error("Faltan datos del académico");
   }
+}
+
+function nombresArea(evaluacion){
+  const lista = evaluacion.evaluaciones?.areas || evaluacion.areas || [];
+  return lista.map(a=> a.nombre);
+}
+
+function datosArea(evaluacion, nombreArea){
+  const lista = evaluacion.evaluaciones?.areas || evaluacion.areas || [];
+  return lista.find(a=> a.nombre === nombreArea);
+}
+
+// Un área solo entra en la deliberación si los 3 comisionados la evaluaron.
+// Si el académico no ejecutó una actividad comprometida (0 horas realizadas),
+// esa área simplemente no llega evaluada desde la maqueta: no se delibera y
+// no pondera en la calificación final — no se penaliza.
+function calcularAreasAplicables(datos){
+  const listas = datos.evaluaciones.map(nombresArea);
+  const [primera, ...resto] = listas;
+  AREAS = AREAS_REFERENCIA.filter(nombre=>
+    primera.includes(nombre) && resto.every(lista=> lista.includes(nombre))
+  );
+  areasExcluidas = AREAS_REFERENCIA.filter(nombre=> !AREAS.includes(nombre));
+
+  deliberaciones = {};
+  AREAS.forEach(a=> deliberaciones[a] = {nivel: null, notas: ""});
 }
 
 function mostrarMensaje(msg, tipo){
@@ -740,11 +778,14 @@ function renderizarPanelDeliberacion(){
   contenedor.innerHTML = "";
 
   AREAS.forEach((area, idx)=>{
-    const evals = datosCargados.evaluaciones.map(e=> ({
-      comisionado: e.comisionado.nombre,
-      nivel: e.evaluaciones?.areas?.[idx]?.nivel || e.areas?.[idx]?.nivel,
-      fund: e.evaluaciones?.areas?.[idx]?.fundamento || e.areas?.[idx]?.fundamento
-    }));
+    const evals = datosCargados.evaluaciones.map(e=> {
+      const d = datosArea(e, area);
+      return {
+        comisionado: e.comisionado.nombre,
+        nivel: d?.nivel,
+        fund: d?.fundamento
+      };
+    });
 
     // Calcular divergencia
     const niveles = evals.map(e=> e.nivel);
@@ -823,10 +864,6 @@ function renderizarPanelDeliberacion(){
 }
 
 /* ---- Cuadro Resumen por Área ---- */
-function nivelDe(evaluacion, idx){
-  return evaluacion.evaluaciones?.areas?.[idx]?.nivel ?? evaluacion.areas?.[idx]?.nivel;
-}
-
 function renderizarResumen(){
   // Encabezados con nombre de cada comisionado
   datosCargados.evaluaciones.forEach((e, i)=>{
@@ -839,7 +876,7 @@ function renderizarResumen(){
   let decididas = 0;
 
   AREAS.forEach((area, idx)=>{
-    const niveles = datosCargados.evaluaciones.map(e=> nivelDe(e, idx));
+    const niveles = datosCargados.evaluaciones.map(e=> datosArea(e, area)?.nivel);
     const minN = Math.min(...niveles);
     const maxN = Math.max(...niveles);
     const divergencia = maxN - minN;
@@ -861,6 +898,16 @@ function renderizarResumen(){
 
   tbody.innerHTML = filas;
   document.getElementById("resumen-progreso").textContent = `${decididas}/${AREAS.length} áreas decididas`;
+
+  const notaExcl = document.getElementById("nota-excluidas");
+  if(notaExcl){
+    if(areasExcluidas.length){
+      notaExcl.innerHTML = `<b>Sin actividad realizada en el período (no se evaluaron, no afectan la calificación):</b> ${areasExcluidas.join(", ")}.`;
+      notaExcl.classList.remove("oculto");
+    } else {
+      notaExcl.classList.add("oculto");
+    }
+  }
 }
 
 function irAArea(idx){
@@ -890,8 +937,8 @@ function guardarNotas(area, notas){
 }
 
 function calcularCF(){
-  const horasObj = datosCargados.academico.areas_horas;
-  const horas = horasObj ? AREAS.map(a=> horasObj[a]) : [14,10,4,3,3,7,3];
+  const horasObj = datosCargados.academico.areas_horas || {};
+  const horas = AREAS.map(a=> horasObj[a] ?? 1);
   const totalH = horas.reduce((a,b)=>a+b, 0);
 
   let suma = 0, hechas = 0;
