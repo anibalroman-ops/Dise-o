@@ -32,14 +32,29 @@ Reglas de editabilidad respetadas
 * Sólo se usan ``Noto Sans`` y ``Noto Serif Display``.
 * Cada objeto conserva un id descriptivo y se agrupa semánticamente en ``<g>``.
 
+Sistema de diseño unificado
+---------------------------
+El SVG de avance se compuso página a página y arrastra tres sistemas de
+encabezado, ocho posiciones de filete de pie, dos retículas y decenas de
+cuerpos tipográficos casi idénticos. El generador aplica el sistema único que
+describen ``MASTER_PAGES``, ``MARGINS_AND_SAFE_AREAS`` y la escala funcional:
+
+* un solo maestro de encabezado (identidad en impares y aperturas, cornisa del
+  manual en pares de continuidad) con el mismo escudo y el mismo filete;
+* un solo pie: filete en y=281 mm, fecha en 288,5 y folio en 291;
+* caja útil única de 18–192 mm, reencajando con escala uniforme las páginas
+  compuestas sobre la retícula de 16 mm;
+* escala tipográfica cuantizada a los peldaños del sistema (de ~90 cuerpos
+  distintos a 29).
+
 Validación automática
 ---------------------
 Antes de escribir el SVG, el generador audita la composición con las métricas
 reales de las fuentes Noto: desbordes laterales respecto del margen útil,
 invasión de la zona de pie de cada página, solapamientos entre objetos de
-texto, filetes que atraviesan una línea y familias tipográficas no permitidas.
-``--auditar`` imprime el informe completo; la salida estable no debe arrojar
-ningún hallazgo.
+texto, filetes o bordes de caja que atraviesan una línea y familias
+tipográficas no permitidas. ``--auditar`` imprime el informe completo; la
+salida estable no debe arrojar ningún hallazgo.
 
 Dependencias
 ------------
@@ -987,6 +1002,11 @@ def depurar_texto_en_curvas(pag: Pagina) -> int:
 # 6. EMISIÓN DE SVG — componentes reutilizables
 # ---------------------------------------------------------------------------
 
+def _id_unico(prefijo: str, id_: str) -> str:
+    """Antepone el prefijo de página sin duplicarlo si ya está presente."""
+    return id_ if id_.startswith(prefijo) else prefijo + id_
+
+
 def _estilo_texto(familia: str, tam: float, peso: int, color: str,
                   estilo: str = "normal", anchor: Optional[str] = None,
                   letter_spacing: float = 0.0) -> str:
@@ -1009,7 +1029,8 @@ def svg_texto(el: ElementoTexto, prefijo: str, sangria: str = "      ") -> str:
     """Serializa un objeto de texto como ``<text>`` con ``<tspan>`` editables."""
     base = _estilo_texto(el.familia, el.tam, el.peso, el.color, el.estilo,
                          el.anchor, el.letter_spacing)
-    attrs = [f'id="{prefijo}{el.id}"', f'style="{base}"']
+    ident = _id_unico(prefijo, el.id)
+    attrs = [f'id="{ident}"', f'style="{base}"']
     if el.matriz and _matriz_str(_parse_matriz(el.matriz)):
         attrs.append(f'transform="{_matriz_str(_parse_matriz(el.matriz))}"')
     if el.role:
@@ -1032,7 +1053,7 @@ def svg_texto(el: ElementoTexto, prefijo: str, sangria: str = "      ") -> str:
             dif.append(f"text-anchor:{r.anchor or 'start'}")
         est = f' style="{";".join(dif)}"' if dif else ""
         out.append(
-            f'<tspan id="{prefijo}{el.id}_l{i:02d}" '
+            f'<tspan id="{ident}_l{i:02d}" '
             f'x="{_fmt(r.x)}" y="{_fmt(r.y)}"{est}>{_escape(r.texto)}</tspan>'
         )
     out.append("</text>")
@@ -1056,7 +1077,7 @@ def svg_vector(el: ElementoVector, prefijo: str, sangria: str = "      ") -> str
         campos = ["x1", "y1", "x2", "y2"]
     else:
         campos = ["d"]
-    attrs = [f'id="{prefijo}{el.id}"']
+    attrs = [f'id="{_id_unico(prefijo, el.id)}"']
     for c in campos:
         if c in g and g[c] != "":
             v = g[c]
@@ -1379,6 +1400,25 @@ def auditar(paginas: Dict[int, Pagina]) -> List[Hallazgo]:
                         f"y={yv:.1f} atraviesa «{texto[:30]}»"))
                     break
 
+        # --- bordes de caja montados sobre texto ajeno --------------------
+        cajas = [v for v in pag.vectores
+                 if v.tipo == "rect" and not _es_fondo(v)
+                 and v.estilo.get("stroke", "none") not in ("none", "")]
+        for el in pag.textos:
+            if not el.runs or _es_pie(el) or _es_encabezado(el):
+                continue
+            techo, fondo = _techo_optico(el), _fondo_optico(el)
+            for v in cajas:
+                borde = v.y_max()
+                if v.y_min() - 0.3 <= techo and fondo <= borde + 0.3:
+                    continue
+                if techo < borde < fondo and \
+                        min(el.x_max(), v.x_max()) - max(el.x_min(), v.x_min()) > 1.0:
+                    hallazgos.append(Hallazgo(
+                        n, "CAJA_CRUZA", f"{v.id}/{el.id}",
+                        f"y={borde:.1f} sobre «{el.texto_plano()[:28]}»"))
+                    break
+
         # --- vectores fuera de caja ---------------------------------------
         for v in pag.vectores:
             if (_es_fondo(v) or _es_pie(v) or _es_filete_pie(v)
@@ -1653,6 +1693,45 @@ def escalar_zona(pag: Pagina, x0: float, y0: float, x1: float, y1: float,
     return len(sel)
 
 
+def despejar_bordes_de_caja(paginas: Dict[int, Pagina],
+                            holgura: float = 2.2) -> int:
+    """Ningún texto ajeno debe quedar montado sobre el filete de una caja.
+
+    Los recuadros heredados (callouts, fórmulas, paneles) a veces terminan
+    justo encima de la primera línea del párrafo siguiente. Si hay espacio por
+    debajo, el párrafo baja hasta despejar el borde.
+    """
+    movidos = 0
+    for n in sorted(paginas):
+        pag = paginas[n]
+        cajas = [v for v in pag.vectores
+                 if v.tipo == "rect" and not _es_fondo(v)
+                 and v.estilo.get("stroke", "none") not in ("none", "")]
+        if not cajas:
+            continue
+        for t in pag.textos:
+            if not t.runs or _es_pie(t) or _es_encabezado(t):
+                continue
+            techo, fondo = _techo_optico(t), _fondo_optico(t)
+            for caja in cajas:
+                borde = caja.y_max()
+                dentro = (caja.y_min() - 0.3 <= techo and fondo <= borde + 0.3
+                          and caja.x_min() - 0.3 <= t.x_min()
+                          and t.x_max() <= caja.x_max() + 0.3)
+                if dentro:
+                    continue
+                cruza = (techo < borde < fondo
+                         and min(t.x_max(), caja.x_max()) - max(t.x_min(), caja.x_min()) > 1.0)
+                if not cruza:
+                    continue
+                dy = borde + holgura - techo
+                if fondo + dy <= _limite_cuerpo(pag):
+                    t.mover(0, dy)
+                    movidos += 1
+                break
+    return movidos
+
+
 def separar_solapes_verticales(pag: Pagina, grupo: str, holgura: float = 0.35,
                                limite: Optional[float] = None) -> int:
     """Reparte los ítems de una lista cuando el interlineado los deja tocándose.
@@ -1700,11 +1779,18 @@ def eliminar(pag: Pagina, *ids: str) -> int:
 
 
 def y_regla_pie(pag: Pagina) -> Optional[ElementoVector]:
-    for v in pag.vectores:
-        if v.tipo in ("line", "rect") and v.bbox[3] <= 1.2 and 265 <= v.bbox[1] <= 294:
-            if v.bbox[2] > 120:
-                return v
-    return None
+    """Filete del pie: el del grupo `pie` y, en su defecto, el más bajo.
+
+    Sin esta preferencia, un filete de tabla que caiga en la franja inferior
+    se confundiría con el pie y falsearía la cota del cuerpo.
+    """
+    candidatos = [v for v in pag.vectores
+                  if v.tipo in ("line", "rect") and v.bbox[3] <= 1.2
+                  and 265 <= v.bbox[1] <= 294 and v.bbox[2] > 120]
+    if not candidatos:
+        return None
+    del_pie = [v for v in candidatos if v.grupo in GRUPOS_PIE]
+    return max(del_pie or candidatos, key=lambda v: v.bbox[1])
 
 
 def normalizar_pie(pag: Pagina, y_regla: float, y_fecha: float,
@@ -1841,7 +1927,8 @@ def comp_tarjeta_actividad(pref: str, x: float, y: float, ancho: float,
                            alto: float, titulo: str, items: Sequence[str],
                            padding: float = 4.0, radio: float = 3.0,
                            tam_titulo: float = 2.85, tam_cuerpo: float = 2.45,
-                           interlineado: float = 3.25) -> List:
+                           interlineado: float = 3.25,
+                           icono: Optional[str] = None) -> List:
     """AREA_ACTIVITY_CARD: rect editable + título + lista interna."""
     grupo = pref
     objetos: List = [ElementoVector(
@@ -1854,6 +1941,10 @@ def comp_tarjeta_actividad(pref: str, x: float, y: float, ancho: float,
     xi = x + padding
     ancho_util = ancho - 2 * padding
     y_titulo = y + padding + tam_titulo + 1.4
+    if icono:
+        objetos.extend(comp_icono_area(f"{pref}_icono", x + ancho / 2.0,
+                                       y + padding + 6.6, icono, grupo=grupo))
+        y_titulo = y + padding + 15.6 + tam_titulo
     lineas_titulo = MEDIDOR.ajustar_lineas(titulo, ancho_util, SANS,
                                            tam_titulo, 700)
     objetos.append(comp_texto(f"{pref}_titulo", xi, y_titulo, lineas_titulo,
@@ -1907,6 +1998,73 @@ def comp_circulo(id_: str, cx: float, cy: float, r: float, relleno: bool,
                           bbox=(cx - r, cy - r, 2 * r, 2 * r))
 
 
+def comp_icono_area(pref: str, cx: float, cy: float, clave: str,
+                    r_fondo: float = 6.6, grupo: str = "cuerpo") -> List[ElementoVector]:
+    """Icono lineal dentro de disco claro, al modo de las páginas 19–24.
+
+    Cuatro pictogramas construidos con geometría nativa (`path`, `line`,
+    `rect`, `circle`): documento, engranaje, diálogo y estrella. Ningún trazo
+    se rasteriza ni se convierte a imagen.
+    """
+    t = 0.28
+    est = {"fill": "none", "stroke": PRIMARY_BLUE, "stroke-width": str(t)}
+    objs: List[ElementoVector] = [ElementoVector(
+        id=f"{pref}_disco", tipo="circle",
+        geom={"cx": cx, "cy": cy, "r": r_fondo},
+        estilo={"fill": VERY_LIGHT_BLUE, "stroke": "none"},
+        grupo=grupo, bbox=(cx - r_fondo, cy - r_fondo, 2 * r_fondo, 2 * r_fondo))]
+
+    def rect(id_, x, y, w, h, extra=None):
+        g = {"x": x, "y": y, "width": w, "height": h}
+        if extra:
+            g.update(extra)
+        objs.append(ElementoVector(id=f"{pref}_{id_}", tipo="rect", geom=g,
+                                   estilo=dict(est), grupo=grupo,
+                                   bbox=(x, y, w, h)))
+
+    def linea(id_, x1, y1, x2, y2, grosor=0.24):
+        e = dict(est)
+        e["stroke-width"] = str(grosor)
+        objs.append(ElementoVector(
+            id=f"{pref}_{id_}", tipo="line",
+            geom={"x1": x1, "y1": y1, "x2": x2, "y2": y2}, estilo=e,
+            grupo=grupo, bbox=(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))))
+
+    def circulo(id_, ccx, ccy, rr, relleno=False):
+        e = ({"fill": PRIMARY_BLUE, "stroke": "none"} if relleno else dict(est))
+        objs.append(ElementoVector(
+            id=f"{pref}_{id_}", tipo="circle",
+            geom={"cx": ccx, "cy": ccy, "r": rr}, estilo=e, grupo=grupo,
+            bbox=(ccx - rr, ccy - rr, 2 * rr, 2 * rr)))
+
+    if clave == "documento":
+        rect("hoja", cx - 2.5, cy - 3.4, 5.0, 6.8, {"rx": 0.5, "ry": 0.5})
+        for i, dy in enumerate((-1.5, -0.2, 1.1)):
+            linea(f"renglon_{i}", cx - 1.5, cy + dy, cx + 1.5, cy + dy, 0.22)
+    elif clave == "engranaje":
+        circulo("aro", cx, cy, 2.5)
+        circulo("eje", cx, cy, 0.9)
+        for i in range(6):
+            a = i * math.pi / 3.0
+            linea(f"diente_{i}", cx + 2.5 * math.cos(a), cy + 2.5 * math.sin(a),
+                  cx + 3.6 * math.cos(a), cy + 3.6 * math.sin(a), 0.26)
+    elif clave == "dialogo":
+        rect("globo", cx - 3.2, cy - 3.0, 6.4, 4.6, {"rx": 1.0, "ry": 1.0})
+        objs.append(ElementoVector(
+            id=f"{pref}_pico", tipo="path",
+            geom={"d": f"M {_fmt(cx - 1.4)},{_fmt(cy + 1.6)} "
+                       f"L {_fmt(cx - 1.4)},{_fmt(cy + 3.3)} "
+                       f"L {_fmt(cx + 0.5)},{_fmt(cy + 1.6)}"},
+            estilo=dict(est), grupo=grupo,
+            bbox=(cx - 1.4, cy + 1.6, 1.9, 1.7)))
+        for i, dx in enumerate((-1.4, 0.0, 1.4)):
+            circulo(f"punto_{i}", cx + dx, cy - 0.7, 0.32, relleno=True)
+    else:                                   # estrella
+        objs.append(comp_estrella(f"{pref}_estrella", cx, cy, 3.3,
+                                  PRIMARY_BLUE, grupo))
+    return objs
+
+
 def _items_desde_bloque(texto: str) -> List[str]:
     """Convierte un bloque `• …` multilínea del Markdown en items limpios."""
     items: List[str] = []
@@ -1954,6 +2112,7 @@ def construir_pagina_23(pag: Pagina, donante: Pagina) -> None:
     num43, _, tit43 = enc43.partition("\n")
     for obj in comp_encabezado_articulo("p23_a43", MARGEN_IZQ, 45.5,
                                         num43.strip(), tit43.strip(), 58.7,
+                                        tam_titulo=TITULO_AREA_INTERMEDIO,
                                         acento=66.4, grupo="articulo_43"):
         (pag.vectores if isinstance(obj, ElementoVector) else pag.textos).append(obj)
     pag.textos.append(comp_parrafo(
@@ -1970,8 +2129,9 @@ def construir_pagina_23(pag: Pagina, donante: Pagina) -> None:
         datos = c.get(f"CARD_43_{i:02d}") or {}
         titulo = " ".join(str(datos.get("title", "")).split())
         items = _items_desde_bloque(str(datos.get("body", "")))
+        icono = ("documento", "engranaje", "dialogo", "estrella")[i - 1]
         for obj in comp_tarjeta_actividad(f"p23_card_43_{i}", x, 105.0, 40.5,
-                                          55.0, titulo, items):
+                                          55.0, titulo, items, icono=icono):
             (pag.vectores if isinstance(obj, ElementoVector) else pag.textos).append(obj)
 
     # filete de cierre del Artículo 43, como en las páginas 21 y 24
@@ -1983,8 +2143,9 @@ def construir_pagina_23(pag: Pagina, donante: Pagina) -> None:
     enc44 = (c.get("ARTICLE_44_HEADING") or "Artículo 44.\nAdministración académica")
     num44, _, tit44 = enc44.partition("\n")
     for obj in comp_encabezado_articulo("p23_a44", MARGEN_IZQ, 177.0,
-                                        num44.strip(), tit44.strip(), 186.6,
-                                        tam_titulo=7.8, grupo="articulo_44"):
+                                        num44.strip(), tit44.strip(), 187.4,
+                                        tam_titulo=TITULO_AREA_INTERMEDIO,
+                                        grupo="articulo_44"):
         (pag.vectores if isinstance(obj, ElementoVector) else pag.textos).append(obj)
     pag.textos.append(comp_parrafo(
         "p23_a44_cuerpo", MARGEN_IZQ, 194.5, c.get("ARTICLE_44_BODY", ""),
@@ -2044,7 +2205,7 @@ def _p04(pag: Pagina, doc: Dict[int, Pagina]) -> None:
 
 def _p06(pag: Pagina, doc: Dict[int, Pagina]) -> None:
     """Artículos 7–11 compactados con la progresión documentada."""
-    normalizar_pie(pag, 284.0, 291.0, 293.0)
+    # El pie de esta página lo fija ya el maestro canónico.
     # Compactación con ritmo uniforme: se conserva todo el texto y se evita
     # que los separadores queden sobre los títulos, cosa que sí ocurriría con
     # la progresión fija −4/−8/−12/−18/−25 aplicada literalmente.
@@ -2068,8 +2229,12 @@ def _p08(pag: Pagina, doc: Dict[int, Pagina]) -> None:
 
 
 def _p09(pag: Pagina, doc: Dict[int, Pagina]) -> None:
-    """Restituye MASTER_PAGE_STANDARD_ODD: el encabezado ausente es un error."""
-    clonar_identidad(doc[17], pag)
+    """El encabezado ausente del origen ya lo restituye `normalizar_maestros`.
+
+    Se conserva la comprobación para que el override quede verificado.
+    """
+    if not any(t.role == "HEADER_IDENTITY" for t in pag.textos):
+        clonar_identidad(doc[17], pag)
 
 
 def _p10(pag: Pagina, doc: Dict[int, Pagina]) -> None:
@@ -2105,7 +2270,6 @@ def _p12(pag: Pagina, doc: Dict[int, Pagina]) -> None:
     nota = pag.texto("section_b_note")
     if nota:
         nota.mover(0, -5.0)
-    normalizar_pie(pag, 280.0, 288.0, 291.0)
 
 
 def _p14(pag: Pagina, doc: Dict[int, Pagina]) -> None:
@@ -2170,11 +2334,11 @@ def _p17(pag: Pagina, doc: Dict[int, Pagina]) -> None:
 
 def _p18(pag: Pagina, doc: Dict[int, Pagina]) -> None:
     """Apertura del Título VII: se elimina el encabezado largo duplicado."""
-    duplicado = next((t for t in pag.textos
-                      if t.role == "HEADER_IDENTITY"
-                      and "MANUAL DE EVALUACIÓN" in t.texto_plano().upper()), None)
-    if duplicado is not None:
-        eliminar(pag, duplicado.id)
+    # El encabezado híbrido lo elimina ya `normalizar_maestros`; la apertura
+    # del Título VII queda con identidad institucional.
+    for t in [t for t in pag.textos if t.role == "HEADER_IDENTITY"
+              and "MANUAL DE EVALUACIÓN" in t.texto_plano().upper()]:
+        eliminar(pag, t.id)
     titulo = next((t for t in pag.textos if t.role == "DISPLAY_TITLE_XL"), None)
     if titulo:
         titulo.familia = SERIF
@@ -2197,7 +2361,6 @@ def _p19(pag: Pagina, doc: Dict[int, Pagina]) -> None:
                      if v.grupo == grupo and v.tipo == "rect"), None)
         separar_solapes_verticales(
             pag, grupo, limite=(caja.y_max() - 2.0) if caja else None)
-    normalizar_pie(pag, 279.0, 287.0, 290.0)
 
 
 def _p21(pag: Pagina, doc: Dict[int, Pagina]) -> None:
@@ -2240,7 +2403,6 @@ def _p24(pag: Pagina, doc: Dict[int, Pagina]) -> None:
     if tarjetas:
         y_top = min(_techo_optico(o) for o in tarjetas)
         elevar_bloque(pag, y_top - 0.5, y_top + 30.0, 12.0)
-    normalizar_pie(pag, 282.0, 289.0, 292.0)
 
 
 def _p26(pag: Pagina, doc: Dict[int, Pagina]) -> None:
@@ -2260,13 +2422,11 @@ def _p27(pag: Pagina, doc: Dict[int, Pagina]) -> None:
     # El objetivo de ≈18 mm se acota automáticamente: la lista de efectos del
     # Artículo 55, ya elevada, fija el techo disponible para el Título X.
     elevar_bloque(pag, 240.0, 286.0, 18.0, holgura=5.0)
-    normalizar_pie(pag, 284.0, 291.0, 293.0)
 
 
 def _p28(pag: Pagina, doc: Dict[int, Pagina]) -> None:
     """Artículo 60 elevado 10 mm; matriz 2×5 de requisitos intacta."""
     elevar_bloque(pag, 260.0, 282.0, 10.0)
-    normalizar_pie(pag, 285.0, 291.0, 293.0)
 
 
 CORRECCIONES: Dict[int, Callable[[Pagina, Dict[int, Pagina]], None]] = {
@@ -2495,7 +2655,7 @@ def _limite_cuerpo(pag: Pagina) -> float:
     """Línea a partir de la cual empieza la zona reservada del pie."""
     regla = y_regla_pie(pag)
     if regla is not None:
-        return regla.bbox[1] - 1.2
+        return regla.bbox[1] - 2.5
     return CUERPO_BOTTOM_SEGURO
 
 
@@ -2517,8 +2677,49 @@ def _marcar_pie(pag: Pagina) -> None:
         regla.grupo = "pie"
 
 
+def garantizar_zona_de_pie(paginas: Dict[int, Pagina],
+                           holgura_min: float = 2.5) -> int:
+    """Última red de seguridad: ningún cuerpo entra en la zona del pie.
+
+    Si tras todas las correcciones una página sigue rebasando la cota, se
+    eleva su último bloque con la holgura mínima imprescindible.
+    """
+    ajustadas = 0
+    for n in sorted(paginas):
+        pag = paginas[n]
+        limite = _limite_cuerpo(pag)
+        cuerpo = [o for o in list(pag.textos) + list(pag.vectores)
+                  if not _es_fondo_o_pie(o) and not _es_encabezado(o)]
+        if not cuerpo:
+            continue
+        exceso = max(_fondo_optico(o) for o in cuerpo) - limite
+        if exceso <= 0:
+            continue
+        ultimo = max(cuerpo, key=_fondo_optico)
+        y0 = _techo_optico(ultimo)
+        # Se intenta primero con el último bloque; si no basta, se sube el
+        # conjunto ampliando la banda hacia arriba y apretando la holgura.
+        for altura, holgura in ((0.5, 4.0), (0.5, 3.2), (18.0, 3.2),
+                                (40.0, holgura_min), (80.0, holgura_min)):
+            movido = elevar_bloque(pag, y0 - altura, y0 + 60.0, exceso + 0.4,
+                                   holgura=holgura)
+            exceso += movido            # `movido` es negativo o 0
+            y0 += movido
+            if exceso <= 0:
+                break
+        ajustadas += 1
+    return ajustadas
+
+
 def aplicar_correcciones(paginas: Dict[int, Pagina]) -> None:
-    """Aplica la POLÍTICA DE NORMALIZACIÓN Y PRECEDENCIA del Markdown."""
+    """Aplica la POLÍTICA DE NORMALIZACIÓN Y PRECEDENCIA del Markdown.
+
+    El orden importa: primero se limpia el legado (curvas de texto), después
+    se unifica el sistema de diseño (maestros, retícula, escala) y sólo
+    entonces se aplican los `CORRECTION_OVERRIDE`, que trabajan ya sobre la
+    página normalizada. Los pases de ritmo tipográfico y el resguardo del pie
+    cierran el proceso.
+    """
     for n in sorted(paginas):
         _folios_serif(paginas[n])
         _marcar_pie(paginas[n])
@@ -2526,17 +2727,348 @@ def aplicar_correcciones(paginas: Dict[int, Pagina]) -> None:
     # PAGE_23 se reconstruye antes que el resto para poder validarla igual
     if 23 in paginas:
         construir_pagina_23(paginas[23], paginas[17])
+
+    normalizar_maestros(paginas)
+
     for n in sorted(CORRECCIONES):
         if n in paginas:
             CORRECCIONES[n](paginas[n], paginas)
+
+    # El encaje en la retícula reescala páginas enteras, así que la escala
+    # tipográfica se cuantiza después: de lo contrario cada peldaño volvería
+    # a desdoblarse (13,20 y 13,17; 3,20 y 3,19 …).
+    encajar_en_reticula(paginas)
+    unificar_titulos_de_area(paginas)
+    cuantizar_escala(paginas)
+    ajustar_inicio_de_cuerpo(paginas)
     reajustar_listas(paginas)
     airear_interlineado(paginas)
+    despejar_bordes_de_caja(paginas)
+    garantizar_zona_de_pie(paginas)
     for n in sorted(paginas):
         _marcar_pie(paginas[n])
 
 
 # ---------------------------------------------------------------------------
-# 12. RENDER Y EXPORTACIÓN
+# 12. NORMALIZACIÓN DEL SISTEMA DE DISEÑO
+#     El SVG de avance se compuso página a página y arrastra tres sistemas de
+#     encabezado, ocho posiciones de filete, dos retículas y una escala
+#     tipográfica con decenas de cuerpos casi idénticos. `MASTER_PAGES`,
+#     `MARGINS_AND_SAFE_AREAS` y `ESCALA TIPOGRÁFICA FUNCIONAL` definen un
+#     único sistema: aquí se aplica a las 30 páginas.
+# ---------------------------------------------------------------------------
+
+# --- Mobiliario de página --------------------------------------------------
+CAB_REGLA_Y = 33.0            # filete de encabezado, ancho útil completo
+CAB_CUERPO_MIN = 36.8         # primera línea posible del cuerpo
+PIE_REGLA_Y = 281.0           # filete de pie (zona segura 279–297)
+PIE_FECHA_Y = 288.5
+PIE_FOLIO_Y = 291.0
+PIE_FECHA_TAM = 3.05
+PIE_FOLIO_TAM = 8.1
+
+# Identidad institucional (MASTER_PAGE_IDENTITY)
+ESCUDO_XY = (15.7, 7.0)
+IDENT_USACH = (36.0, 18.0, 4.59)
+IDENT_FACULTAD = (36.0, 24.0, 2.82)
+IDENT_LEMA_X = 168.0
+IDENT_LEMA_Y = (16.0, 19.243, 22.486)
+IDENT_LEMA_TAM = 2.82
+
+# Cornisa de continuidad (MASTER_PAGE_MANUAL)
+CORNISA_TITULO = ("MANUAL DE EVALUACIÓN Y CALIFICACIÓN", "DEL DESEMPEÑO ACADÉMICO")
+CORNISA_Y = (16.8, 19.574)
+CORNISA_TAM = 2.72
+CORNISA_DERECHA = "FACULTAD DE INGENIERÍA · USACH"
+CORNISA_DERECHA_Y = 19.7
+
+# Páginas de apertura: usan identidad aunque el folio sea par
+PAGINAS_APERTURA = {1, 3, 7, 13, 15, 18, 25, 30}
+
+
+def _usa_identidad(numero: int) -> bool:
+    return numero in PAGINAS_APERTURA or numero % 2 == 1
+
+
+def _limpiar_mobiliario(pag: Pagina) -> Optional[ElementoVector]:
+    """Retira encabezado y pie heredados; devuelve el escudo si lo había."""
+    escudo = None
+    conservar_v = []
+    for v in pag.vectores:
+        # La franja del encabezado pertenece por completo al maestro: todo
+        # objeto que nazca por encima de y = 32.2 mm (escudos, wordmarks
+        # vectorizados, filetes sueltos, cornisas híbridas) se retira, porque
+        # el cuerpo de página nunca empieza ahí.
+        if not _es_fondo(v) and v.bbox[1] < 32.2:
+            if escudo is None and "crest" in v.id:
+                escudo = v
+            continue
+        if "crest" in v.id:
+            if escudo is None:
+                escudo = v
+            continue
+        # filetes de encabezado y de pie en todas sus variantes
+        if v.tipo in ("line", "rect") and v.bbox[3] <= 1.3 and v.bbox[2] >= 60.0 \
+                and (v.bbox[1] < 50.0 or v.bbox[1] > 265.0):
+            continue
+        # cajas blancas auxiliares del encabezado
+        if v.tipo == "rect" and v.bbox[1] < 40.0 and not _es_fondo(v) \
+                and v.estilo.get("fill", "").lower() in ("#ffffff", "white") \
+                and v.estilo.get("stroke", "none") == "none":
+            continue
+        # separador vertical del lema
+        if v.tipo == "line" and v.bbox[2] <= 1.0 and v.bbox[1] < 35.0:
+            continue
+        conservar_v.append(v)
+    pag.vectores = conservar_v
+    pag.textos = [t for t in pag.textos
+                  if t.role != "HEADER_IDENTITY"
+                  and not (t.role in ROLES_PIE and t.runs and t.runs[0].y > 250)]
+    return escudo
+
+
+def _mobiliario_identidad(pag: Pagina, escudo: Optional[ElementoVector],
+                          modelo: Optional[ElementoVector]) -> None:
+    """Bloque de identidad institucional idéntico en todas las páginas.
+
+    Se usa siempre el mismo escudo (el compacto de las páginas 13–30); las
+    variantes sueltas o fragmentadas del original no se reproducen, porque
+    hacían que el emblema cambiara de tamaño y de dibujo al pasar de página.
+    """
+    pref = f"p{pag.numero:02d}_"
+    fuente = modelo if modelo is not None else escudo
+    if fuente is not None:
+        import copy
+        nuevo = copy.deepcopy(fuente)
+        nuevo.id = pref + "escudo"
+        nuevo.grupo = "encabezado"
+        nuevo.mover(ESCUDO_XY[0] - nuevo.bbox[0], ESCUDO_XY[1] - nuevo.bbox[1])
+        pag.vectores.append(nuevo)      # por encima del fondo de página
+    x, y, tam = IDENT_USACH
+    pag.textos.insert(0, comp_texto(pref + "usach", x, y, ["USACH"], tam,
+                                    peso=700, role="HEADER_IDENTITY",
+                                    grupo="encabezado"))
+    x, y, tam = IDENT_FACULTAD
+    pag.textos.insert(1, comp_texto(pref + "facultad", x, y,
+                                    ["FACULTAD DE INGENIERÍA"], tam,
+                                    role="HEADER_IDENTITY", grupo="encabezado"))
+    pag.vectores.append(ElementoVector(
+        id=pref + "lema_filete", tipo="line",
+        geom={"x1": 161.5, "y1": 13.8, "x2": 161.5, "y2": 23.8},
+        estilo={"stroke": SECONDARY_BLUE, "stroke-width": "0.3"},
+        grupo="encabezado", bbox=(161.5, 13.8, 0.0, 10.0)))
+    lema = comp_texto(pref + "lema", IDENT_LEMA_X, IDENT_LEMA_Y[0],
+                      ["Conocimiento", "para un mejor", "futuro"],
+                      IDENT_LEMA_TAM, role="HEADER_IDENTITY", grupo="encabezado")
+    for r, y in zip(lema.runs, IDENT_LEMA_Y):
+        r.y = y
+    pag.textos.insert(2, lema)
+
+
+def _mobiliario_cornisa(pag: Pagina) -> None:
+    pref = f"p{pag.numero:02d}_"
+    izq = comp_texto(pref + "cornisa", MARGEN_IZQ, CORNISA_Y[0],
+                     list(CORNISA_TITULO), CORNISA_TAM, peso=700,
+                     role="HEADER_IDENTITY", grupo="encabezado")
+    izq.runs[1].y = CORNISA_Y[1]
+    pag.textos.insert(0, izq)
+    der = comp_texto(pref + "cornisa_der", MARGEN_DER, CORNISA_DERECHA_Y,
+                     [CORNISA_DERECHA], CORNISA_TAM, peso=700, anchor="end",
+                     role="HEADER_IDENTITY", grupo="encabezado")
+    pag.textos.insert(1, der)
+
+
+def normalizar_maestros(paginas: Dict[int, Pagina]) -> None:
+    """Reconstruye encabezado y pie de las 30 páginas desde `MASTER_PAGES`.
+
+    Impares y aperturas llevan identidad institucional (escudo + USACH +
+    Facultad + lema); las pares de continuidad, la cornisa del manual. Ningún
+    encabezado híbrido sobrevive, el filete superior y el pie quedan en una
+    única posición y el folio y la fecha en un único cuerpo.
+    """
+    modelo = next((v for v in paginas[17].vectores if "crest" in v.id), None)
+    if modelo is None:
+        for m in sorted(paginas):
+            modelo = next((v for v in paginas[m].vectores
+                           if "crest" in v.id and v.bbox[2] < 20.0), None)
+            if modelo is not None:
+                break
+    for n in sorted(paginas):
+        pag = paginas[n]
+        escudo = _limpiar_mobiliario(pag)
+        if _usa_identidad(n):
+            _mobiliario_identidad(pag, escudo, modelo)
+        else:
+            _mobiliario_cornisa(pag)
+        pag.vectores.append(comp_regla(f"p{n:02d}_cab_regla", MARGEN_IZQ,
+                                       CAB_REGLA_Y, MARGEN_DER, PRIMARY_BLUE,
+                                       0.32, grupo="encabezado"))
+        pag.vectores.append(comp_regla(f"p{n:02d}_pie_regla", MARGEN_IZQ,
+                                       PIE_REGLA_Y, MARGEN_DER, PRIMARY_BLUE,
+                                       0.32, grupo="pie"))
+        _pie_canonico(pag, PIE_FECHA_Y, PIE_FOLIO_Y)
+
+
+def _pie_canonico(pag: Pagina, y_fecha: float, y_folio: float) -> None:
+    pref = f"p{pag.numero:02d}_"
+    pag.textos.append(comp_texto(pref + "pie_fecha", MARGEN_IZQ, y_fecha,
+                                 ["Santiago, Chile · 2026"], PIE_FECHA_TAM,
+                                 role="FOOTER_LOCATION_YEAR", grupo="pie"))
+    pag.textos.append(comp_texto(pref + "pie_folio", MARGEN_DER, y_folio,
+                                 [f"{pag.numero:02d}"], PIE_FOLIO_TAM,
+                                 peso=600, familia=SERIF, anchor="end",
+                                 role="PAGE_NUMBER", grupo="pie"))
+
+
+# --- Retícula --------------------------------------------------------------
+
+def _cuerpo_de_pagina(pag: Pagina) -> List:
+    return [o for o in list(pag.vectores) + list(pag.textos)
+            if not _es_pie(o) and not _es_encabezado(o)
+            and not (isinstance(o, ElementoVector)
+                     and (_es_fondo(o) or _es_decorativo(o)))]
+
+
+def encajar_en_reticula(paginas: Dict[int, Pagina],
+                        reduccion_maxima: float = 0.045) -> int:
+    """Lleva todas las páginas a la caja útil única de 18–192 mm.
+
+    Seis páginas del original componen sobre una retícula de 16–194 mm, lo que
+    hace saltar el bloque de texto 2 mm al pasar de página. El cuerpo se
+    reencaja con una escala **uniforme** (nunca horizontal: los círculos y los
+    iconos siguen siendo círculos) anclada en su borde superior, de modo que
+    el encabezado normalizado no se ve afectado.
+    """
+    ajustadas = 0
+    for n in sorted(paginas):
+        pag = paginas[n]
+        cuerpo = _cuerpo_de_pagina(pag)
+        if not cuerpo:
+            continue
+        x0, y0, x1, _ = bbox_objetos(cuerpo)
+        if x1 - x0 <= 0:
+            continue
+        fuera = (x0 < MARGEN_IZQ - 0.15) or (x1 > MARGEN_DER + 0.15)
+        if not fuera:
+            continue
+        k = min(1.0, ANCHO_UTIL / (x1 - x0))
+        if k < 1.0 - reduccion_maxima:
+            # Reducir tanto deformaría la página: es un desborde real y lo
+            # resuelve el `CORRECTION_OVERRIDE` correspondiente, no la retícula.
+            continue
+        if k < 1.0:
+            for o in cuerpo:
+                o.escalar(k, x0, y0)
+        x0b, _, x1b, _ = bbox_objetos(cuerpo)
+        dx = 0.0
+        if x0b < MARGEN_IZQ - 0.05:
+            dx = MARGEN_IZQ - x0b
+        elif x1b > MARGEN_DER + 0.05:
+            dx = MARGEN_DER - x1b
+        if abs(dx) > 0.005:
+            mover(cuerpo, dx=dx)
+        ajustadas += 1
+    return ajustadas
+
+
+def ajustar_inicio_de_cuerpo(paginas: Dict[int, Pagina]) -> int:
+    """Impide que el cuerpo suba por encima del filete de encabezado."""
+    movidas = 0
+    for n in sorted(paginas):
+        pag = paginas[n]
+        if n == 1:
+            continue
+        cuerpo = _cuerpo_de_pagina(pag)
+        if not cuerpo:
+            continue
+        top = min(_techo_optico(o) for o in cuerpo)
+        if top >= CAB_CUERPO_MIN - 0.05:
+            continue
+        dy = CAB_CUERPO_MIN - top
+        fondo = max(_fondo_optico(o) for o in cuerpo)
+        if fondo + dy > _limite_cuerpo(pag):
+            dy = max(0.0, _limite_cuerpo(pag) - fondo)
+        if dy > 0.05:
+            mover(cuerpo, dy=dy)
+            movidas += 1
+    return movidas
+
+
+# --- Escala tipográfica ----------------------------------------------------
+
+# Títulos de área (Título VII): dos rangos y sólo dos, según la apertura
+# ocupe la página entera o arranque a media caja.
+TITULO_AREA_PLENO = 13.20
+TITULO_AREA_INTERMEDIO = 10.00
+PAGINAS_AREA_PLENO = (19, 20, 22)
+PAGINAS_AREA_INTERMEDIO = (24,)
+
+
+def unificar_titulos_de_area(paginas: Dict[int, Pagina]) -> int:
+    """Un único par de cuerpos para los títulos de las áreas académicas.
+
+    El original los compone entre 10,2 y 14,2 unidades sin criterio visible;
+    con dos escalones la jerarquía se lee de inmediato: apertura a página
+    completa frente a apertura a media caja.
+    """
+    cambiados = 0
+    for numero, objetivo in [(n, TITULO_AREA_PLENO) for n in PAGINAS_AREA_PLENO] + \
+                            [(n, TITULO_AREA_INTERMEDIO) for n in PAGINAS_AREA_INTERMEDIO]:
+        pag = paginas.get(numero)
+        if pag is None:
+            continue
+        titulo = max((t for t in pag.textos
+                      if t.role in ("DISPLAY_TITLE_XL", "DISPLAY_TITLE_L")),
+                     key=lambda t: t.tam, default=None)
+        if titulo is None or abs(titulo.tam - objetivo) < 0.01:
+            continue
+        titulo.fijar_tam(objetivo)
+        ajustar_a_ancho([titulo], _limite_derecho(titulo) - titulo.x_min(), 8.0)
+        cambiados += 1
+    return cambiados
+
+
+ESCALA_FUNCIONAL = (1.80, 1.95, 2.10, 2.25, 2.40, 2.55, 2.70, 2.85, 3.00,
+                    3.20, 3.40, 3.60, 3.90, 4.20, 4.60, 5.00, 5.40, 6.00,
+                    6.60, 7.20, 7.80, 8.10, 8.40, 9.20, 10.00, 10.80, 12.00,
+                    13.20, 14.00, 15.60, 16.50, 31.50)
+
+
+def cuantizar_escala(paginas: Dict[int, Pagina], tolerancia: float = 0.055) -> int:
+    """Reduce la escala tipográfica a los peldaños del sistema.
+
+    El origen usa 47 cuerpos distintos sólo para texto corrido (2.42, 2.45,
+    2.48, 2.5 …), diferencias invisibles que impiden reconocer una jerarquía.
+    Cada objeto salta al peldaño más próximo de la escala funcional siempre
+    que el cambio sea menor que ``tolerancia``, de modo que ninguna medida se
+    altera de forma perceptible y la jerarquía relativa se conserva.
+    """
+    cambiados = 0
+    for pag in paginas.values():
+        for t in pag.textos:
+            if t.tam <= 0:
+                continue
+            limite = _limite_derecho(t)
+            escalones = sorted(ESCALA_FUNCIONAL, key=lambda v: abs(v - t.tam))
+            for objetivo in escalones[:2]:
+                if abs(objetivo - t.tam) / t.tam > tolerancia:
+                    continue
+                if abs(objetivo - t.tam) < 0.005:
+                    break
+                factor = objetivo / t.tam
+                if factor > 1.0 and t.x_max() * 1.0 +                         (t.x_max() - t.x_min()) * (factor - 1.0) > limite:
+                    continue        # crecería fuera de la caja: probar el
+                                    # peldaño inferior
+                for r in t.runs:
+                    r.tam = round(r.tam * factor, 3)
+                t.tam = objetivo
+                cambiados += 1
+                break
+    return cambiados
+
+
+# ---------------------------------------------------------------------------
+# 13. RENDER Y EXPORTACIÓN
 # ---------------------------------------------------------------------------
 
 def exportar_previews(paginas: Dict[int, Pagina], destino: str = DIR_PREVIEW,
@@ -2583,7 +3115,7 @@ def exportar_pdf(paginas: Dict[int, Pagina], destino: str = SALIDA_PDF) -> Optio
 
 
 # ---------------------------------------------------------------------------
-# 13. PROGRAMA PRINCIPAL
+# 14. PROGRAMA PRINCIPAL
 # ---------------------------------------------------------------------------
 
 def construir_documento() -> Dict[int, Pagina]:
