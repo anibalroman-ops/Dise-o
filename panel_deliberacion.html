@@ -165,6 +165,109 @@
     color:var(--primary);
   }
 
+  /* ========== Resumen Comisión ========== */
+  .resumen-comision{
+    margin-bottom:32px;
+    border:1px solid var(--gray-200);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .resumen-titulo{
+    background:var(--gray-900);
+    color:#fff;
+    padding:14px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    font-size:14px;
+    font-weight:700;
+  }
+  .resumen-progreso{
+    font-size:11px;
+    font-weight:600;
+    background:rgba(255,255,255,0.15);
+    padding:4px 10px;
+    border-radius:12px;
+    white-space:nowrap;
+  }
+  .resumen-tabla-wrap{
+    overflow-x:auto;
+  }
+  .resumen-tabla{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+  }
+  .resumen-tabla th{
+    background:var(--gray-50);
+    text-align:left;
+    padding:10px 14px;
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--gray-600);
+    border-bottom:2px solid var(--gray-200);
+    white-space:nowrap;
+  }
+  .resumen-tabla th:not(:first-child),
+  .resumen-tabla td:not(:first-child){
+    text-align:center;
+  }
+  .resumen-tabla td{
+    padding:9px 14px;
+    border-bottom:1px solid var(--gray-200);
+  }
+  .resumen-tabla tbody tr{
+    cursor:pointer;
+    transition:background 0.15s;
+  }
+  .resumen-tabla tbody tr:hover{background:var(--primary-light)}
+  .resumen-tabla tbody tr:last-child td{border-bottom:none}
+  .resumen-area-nombre{
+    font-weight:600;
+    color:var(--gray-900);
+    white-space:nowrap;
+  }
+  .resumen-nivel-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:24px;
+    height:24px;
+    padding:0 6px;
+    border-radius:6px;
+    font-weight:700;
+    font-size:12px;
+    background:var(--gray-100);
+    color:var(--gray-700);
+  }
+  .resumen-nivel-badge[data-n="0"]{background:#FEE2E2;color:#DC2626}
+  .resumen-nivel-badge[data-n="1"]{background:#FEF3C7;color:#B45309}
+  .resumen-nivel-badge[data-n="2"]{background:var(--gray-100);color:var(--gray-700)}
+  .resumen-nivel-badge[data-n="3"]{background:#DBEAFE;color:#1D4ED8}
+  .resumen-nivel-badge[data-n="4"]{background:#DCFCE7;color:#15803D}
+  .resumen-divergencia-badge{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:12px;
+    font-size:10px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+  .resumen-divergencia-badge.total{background:#DCFCE7;color:#15803D}
+  .resumen-divergencia-badge.moderado{background:#FEF3C7;color:#B45309}
+  .resumen-divergencia-badge.alto{background:#FEE2E2;color:#DC2626}
+  .resumen-acordado{
+    font-weight:700;
+    font-size:12px;
+    color:var(--neutral-light);
+    white-space:nowrap;
+  }
+  .resumen-acordado.decidido{color:var(--primary)}
+
   /* ========== Áreas de Deliberación ========== */
   .area-deliberacion{
     border:1px solid var(--gray-200);
@@ -481,6 +584,29 @@
       <div class="campo"><span class="label">Jornada:</span><span class="valor" id="info-jornada">—</span></div>
     </div>
 
+    <!-- Cuadro Resumen por Área -->
+    <div class="resumen-comision">
+      <div class="resumen-titulo">
+        <span>Resumen de evaluaciones de la comisión</span>
+        <span class="resumen-progreso" id="resumen-progreso">0/7 áreas decididas</span>
+      </div>
+      <div class="resumen-tabla-wrap">
+        <table class="resumen-tabla">
+          <thead>
+            <tr>
+              <th>Área</th>
+              <th id="resumen-th-1">Comisionado 1</th>
+              <th id="resumen-th-2">Comisionado 2</th>
+              <th id="resumen-th-3">Comisionado 3</th>
+              <th>Divergencia</th>
+              <th>Acordado</th>
+            </tr>
+          </thead>
+          <tbody id="resumen-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Áreas de Deliberación (se genera dinámicamente) -->
     <div id="areas-contenedor"></div>
 
@@ -623,7 +749,7 @@ function renderizarPanelDeliberacion(){
     const divergencia = maxN - minN;
 
     const html = `
-      <div class="area-deliberacion">
+      <div class="area-deliberacion" data-area="${area}" id="area-block-${idx}">
         <div class="area-encabezado" onclick="this.nextElementSibling.classList.toggle('visible')">
           <div class="area-nombre">${area}</div>
           <div class="area-toggle">▼</div>
@@ -686,8 +812,60 @@ function renderizarPanelDeliberacion(){
     document.getElementById(`firma-${num}-hora`).textContent = e.timestamp ? new Date(e.timestamp).toLocaleString("es-CL") : "";
   });
 
+  renderizarResumen();
+
   // Habilitar botón descargar
   document.getElementById("btn-descargar").disabled = false;
+}
+
+/* ---- Cuadro Resumen por Área ---- */
+function nivelDe(evaluacion, idx){
+  return evaluacion.evaluaciones?.areas?.[idx]?.nivel ?? evaluacion.areas?.[idx]?.nivel;
+}
+
+function renderizarResumen(){
+  // Encabezados con nombre de cada comisionado
+  datosCargados.evaluaciones.forEach((e, i)=>{
+    const th = document.getElementById(`resumen-th-${i+1}`);
+    if(th) th.textContent = e.comisionado.nombre;
+  });
+
+  const tbody = document.getElementById("resumen-tbody");
+  let filas = "";
+  let decididas = 0;
+
+  AREAS.forEach((area, idx)=>{
+    const niveles = datosCargados.evaluaciones.map(e=> nivelDe(e, idx));
+    const minN = Math.min(...niveles);
+    const maxN = Math.max(...niveles);
+    const divergencia = maxN - minN;
+    const estadoDiv = divergencia === 0 ? "total" : divergencia === 1 ? "moderado" : "alto";
+    const textoDiv = divergencia === 0 ? "Consenso total" : divergencia === 1 ? "Consenso moderado" : "Discrepancia";
+
+    const acordado = deliberaciones[area].nivel;
+    if(acordado !== null) decididas++;
+
+    filas += `
+      <tr onclick="irAArea(${idx})">
+        <td class="resumen-area-nombre">${area}</td>
+        ${niveles.map(n=> `<td><span class="resumen-nivel-badge" data-n="${n}">${n}</span></td>`).join("")}
+        <td><span class="resumen-divergencia-badge ${estadoDiv}">${textoDiv}</span></td>
+        <td><span class="resumen-acordado ${acordado !== null ? 'decidido' : ''}">${acordado !== null ? acordado + ' — ' + RUBRICA[acordado].cat : 'Pendiente'}</span></td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = filas;
+  document.getElementById("resumen-progreso").textContent = `${decididas}/${AREAS.length} áreas decididas`;
+}
+
+function irAArea(idx){
+  const bloque = document.getElementById(`area-block-${idx}`);
+  if(!bloque) return;
+  bloque.querySelector(".area-contenido").classList.add("visible");
+  bloque.scrollIntoView({behavior:"smooth", block:"start"});
+  bloque.style.boxShadow = "0 0 0 3px var(--primary)";
+  setTimeout(()=> bloque.style.boxShadow = "", 1200);
 }
 
 function seleccionarNivel(area, nivel){
@@ -700,6 +878,7 @@ function seleccionarNivel(area, nivel){
 
   document.getElementById(`resultado-${area}`).textContent = `${nivel} — ${RUBRICA[nivel].cat}`;
   calcularCF();
+  renderizarResumen();
 }
 
 function guardarNotas(area, notas){
@@ -707,7 +886,8 @@ function guardarNotas(area, notas){
 }
 
 function calcularCF(){
-  const horas = datosCargados.academico.horas_por_area || [14,10,4,3,3,7,3];
+  const horasObj = datosCargados.academico.areas_horas;
+  const horas = horasObj ? AREAS.map(a=> horasObj[a]) : [14,10,4,3,3,7,3];
   const totalH = horas.reduce((a,b)=>a+b, 0);
 
   let suma = 0, hechas = 0;
