@@ -1,0 +1,196 @@
+{
+  "academico": {
+    "nombre": "Dr. Carlos Mendoza García",
+    "unidad": "Departamento de Ingeniería Informática",
+    "jerarquia": "Profesor Titular",
+    "periodo": "2026",
+    "jornada": 44,
+    "areas_horas": {
+      "Docencia": 14,
+      "Investigación y desarrollo": 10,
+      "Extensión - VIME": 4,
+      "Extensión - Educación continua": 3,
+      "Asistencia técnica": 3,
+      "Administración académica": 7,
+      "Perfeccionamiento": 3
+    }
+  },
+  "evaluaciones": [
+    {
+      "comisionado": {
+        "nombre": "Dra. Patricia López Ruiz",
+        "correo": "patricia.lopez@usach.cl",
+        "unidad": "Depto. Educación"
+      },
+      "areas": [
+        {
+          "nombre": "Docencia",
+          "nivel": 3,
+          "categoria": "Bueno",
+          "fundamento": "Cumple plenamente lo esperado para la jerarquía. Demuestra conocimiento profundo de la disciplina, organización clara de contenidos y disponibilidad para estudiantes. Las evaluaciones docentes muestran satisfacción consistente.",
+          "retroalimentacion": "Fortalezas: Claridad en exposición, cumplimiento de objetivos. Oportunidades: Explorar metodologías más innovadoras en evaluación formativa."
+        },
+        {
+          "nombre": "Investigación y desarrollo",
+          "nivel": 3,
+          "categoria": "Bueno",
+          "fundamento": "Produce investigación pertinente con publicaciones en revistas indexadas y participación en proyectos financiados. Contribuye activamente a líneas de investigación del departamento.",
+          "retroalimentacion": "Fortalezas: Consistencia en producción. Oportunidades: Aumentar visibilidad internacional de resultados."
+        },
+        {
+          "nombre": "Extensión - VIME",
+          "nivel": 2,
+          "categoria": "Aceptable",
+          "fundamento": "Participa en actividades de extensión de forma ocasional. Ha colaborado en seminarios y talleres con organismos externos, aunque con frecuencia moderada.",
+          "retroalimentacion": "Fortalezas: Disponibilidad para colaborar. Oportunidades: Incrementar participación en proyectos de vinculación con medio."
+        },
+        {
+          "nombre": "Extensión - Educación continua",
+          "nivel": 3,
+          "categoria": "Bueno",
+          "fundamento": "Ha dictado cursos de educación continua pertinentes a su disciplina, con participación regular de profesionales. Evaluaciones positivas de estudiantes.",
+          "retroalimentacion": "Fortalezas: Pertinencia de contenidos. Oportunidades: Sistematizar retroalimentación de participantes."
+        },
+        {
+          "nombre": "Asistencia técnica",
+          "nivel": 1,
+          "categoria": "Deficiente",
+          "fundamento": "Participación limitada en labores de asesoría técnica. No se registran proyectos o consultoría significativa hacia el sector productivo o instituciones externas.",
+          "retroalimentacion": "Fortalezas: Disponibilidad cuando se solicita. Oportunidades: Ampliar participación en asesorías y consultorías especializadas."
+        },
+        {
+          "nombre": "Administración académica",
+          "nivel": 3,
+          "categoria": "Bueno",
+          "fundamento": "Cumple responsabilidades administrativas de forma satisfactoria. Participa en comisiones departamentales y ha colaborado en tareas de coordinación.",
+          "retroalimentacion": "Fortalezas: Responsabilidad y compromiso. Oportunidades: Tomar roles de mayor liderazgo en comisiones."
+        },
+        {
+          "nombre": "Perfeccionamiento",
+          "nivel": 4,
+          "categoria": "Sobresaliente",
+          "fundamento": "Demuestra compromiso excepcional con su desarrollo profesional. Ha realizado diplomados, asistido a congresos internacionales y se mantiene actualizado en su área.",
+          "retroalimentacion": "Fortalezas: Dedicación a mejora continua, liderazgo en capacitación de pares. Oportunidades: Socializar conocimientos adquiridos."
+        }
+      ]
+    },
+    {
+      "comisionado": {
+        "nombre": "Prof. Jorge Ramírez Torres",
+        "correo": "jorge.ramirez@usach.cl",
+        "unidad": "Depto. Ingeniería Informática"
+      },
+      "areas": [
+        {
+          "nombre": "Docencia",
+          "nivel": 3,
+          "categoria": "Bueno",
+          "fundamento": "Excelente dominio de contenidos. Metodología participativa que genera interés en estudiantes. Las evaluaciones docentes muestran calificaciones destacadas de forma consistente.",
+          "retroalimentacion": "Fortalezas: Innovación pedagógica, retroalimentación oportuna a estudiantes. Oportunidades: Documentar experiencias pedagógicas."
+        },
+        {
+          "nombre": "Investigación y desarrollo",
+          "nivel": 3,
+          "categoria": "Bueno",
+          "fundamento": "Producción investigativa sostenida. Publicaciones en congresos internacionales y artículos en revistas de impacto. Lidera proyectos Fondecyt.",
+          "retroalimentacion": "Fortalezas: Calidad de publicaciones. Oportunidades: Aumentar financiamiento externo."
+        },
+        {
+          "nombre": "Extensión - VIME",
+          "nivel": 2,
+          "categoria": "Aceptable",
+          "fundamento": "Participación moderada. Ha desarrollado algunos proyectos de vinculación con empresa, pero la intensidad es baja respecto a jornada comprometida.",
+          "retroalimentacion": "Fortalezas: Capacidad técnica para vinculación. Oportunidades: Formalizar proyectos de colaboración con industria."
+        },
+        {
+          "nombre": "Extensión - Educación continua",
+          "nivel": 3,
+          "categoria": "Bueno",
+          "fundamento": "Docencia regular en programas de educación continua. Diseña cursos pertinentes y mantiene alta demanda de sus programas.",
+          "retroalimentacion": "Fortalezas: Dominio disciplinario y comunicación clara. Oportunidades: Expandir oferta de educación continua."
+        },
+        {
+          "nombre": "Asistencia técnica",
+          "nivel": 0,
+          "categoria": "Ausente",
+          "fundamento": "No registra participación en asesorías técnicas o consultoría durante el período evaluado.",
+          "retroalimentacion": "Fortalezas: Potencial para desarrollar. Oportunidades: Activar participación en labores de asistencia técnica."
+        },
+        {
+          "nombre": "Administración académica",
+          "nivel": 3,
+          "categoria": "Bueno",
+          "fundamento": "Participa activamente en funciones administrativas. Ha coordinado proyectos de departamento y participado en comisiones de gestión académica.",
+          "retroalimentacion": "Fortalezas: Organización y eficiencia. Oportunidades: Continuar participación en roles de coordinación."
+        },
+        {
+          "nombre": "Perfeccionamiento",
+          "nivel": 4,
+          "categoria": "Sobresaliente",
+          "fundamento": "Desarrollo profesional excepcional. Realiza pasantías de investigación en universidades de prestigio, asiste a congresos internacionales anualmente.",
+          "retroalimentacion": "Fortalezas: Excelencia académica, transferencia de conocimiento. Oportunidades: Continuar con investigación postdoctoral."
+        }
+      ]
+    },
+    {
+      "comisionado": {
+        "nombre": "Dra. Marcela Fernández Díaz",
+        "correo": "marcela.fernandez@usach.cl",
+        "unidad": "Depto. Asuntos Académicos"
+      },
+      "areas": [
+        {
+          "nombre": "Docencia",
+          "nivel": 3,
+          "categoria": "Bueno",
+          "fundamento": "Desempeño docente consistente y satisfactorio. Cumple plenamente los objetivos de enseñanza y mantiene relaciones respetuosas con estudiantes.",
+          "retroalimentacion": "Fortalezas: Compromiso con formación de estudiantes. Oportunidades: Incorporar recursos tecnológicos en clase."
+        },
+        {
+          "nombre": "Investigación y desarrollo",
+          "nivel": 3,
+          "categoria": "Bueno",
+          "fundamento": "Investigación activa con publicaciones periódicas. Participa en redes de investigación nacionales e internacionales.",
+          "retroalimentacao": "Fortalezas: Colaboración interdisciplinaria. Oportunidades: Aumentar visibilidad de investigación."
+        },
+        {
+          "nombre": "Extensión - VIME",
+          "nivel": 2,
+          "categoria": "Aceptable",
+          "fundamento": "Participación esporádica en actividades de vinculación con medio. Ha participado en talleres puntuales.",
+          "retroalimentacion": "Fortalezas: Disponibilidad. Oportunidades: Sistematizar proyectos de VIME."
+        },
+        {
+          "nombre": "Extensión - Educación continua",
+          "nivel": 3,
+          "categoria": "Bueno",
+          "fundamento": "Contribuye regularmente a programas de educación continua. Diseña y ejecuta actividades formativas para profesionales.",
+          "retroalimentacion": "Fortalezas: Capacidad didáctica. Oportunidades: Evaluar impacto de programas."
+        },
+        {
+          "nombre": "Asistencia técnica",
+          "nivel": 0,
+          "categoria": "Ausente",
+          "fundamento": "No hay registros de participación en asesorías técnicas o consultorías durante el período.",
+          "retroalimentacion": "Fortalezas: Disponibilidad potencial. Oportunidades: Iniciar labores de asistencia técnica."
+        },
+        {
+          "nombre": "Administración académica",
+          "nivel": 3,
+          "categoria": "Bueno",
+          "fundamento": "Cumple responsabilidades administrativas de forma puntual. Participa en comisiones departamentales.",
+          "retroalimentacion": "Fortalezas: Confiabilidad en gestión. Oportunidades: Asumir responsabilidades mayores."
+        },
+        {
+          "nombre": "Perfeccionamiento",
+          "nivel": 4,
+          "categoria": "Sobresaliente",
+          "fundamento": "Trayectoria de actualización permanente. Ha completado diplomados especializados y participa activamente en conferencias profesionales.",
+          "retroalimentacion": "Fortalezas: Mentalidad de mejora continua. Oportunidades: Certificaciones internacionales."
+        }
+      ]
+    }
+  ],
+  "timestamp_evaluaciones": "2026-09-06T14:45:00Z",
+  "timestamp_carga": "2026-09-06T16:00:00Z"
+}
