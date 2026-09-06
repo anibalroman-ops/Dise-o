@@ -612,8 +612,8 @@ function renderizarPanelDeliberacion(){
   AREAS.forEach((area, idx)=>{
     const evals = datosCargados.evaluaciones.map(e=> ({
       comisionado: e.comisionado.nombre,
-      nivel: e.evaluaciones.areas[idx].nivel,
-      fund: e.evaluaciones.areas[idx].fundamento
+      nivel: e.evaluaciones?.areas?.[idx]?.nivel || e.areas?.[idx]?.nivel,
+      fund: e.evaluaciones?.areas?.[idx]?.fundamento || e.areas?.[idx]?.fundamento
     }));
 
     // Calcular divergencia

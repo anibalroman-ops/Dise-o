@@ -23,8 +23,7 @@
         "correo": "patricia.lopez@usach.cl",
         "unidad": "Depto. Educación"
       },
-      "evaluaciones": {
-        "areas": [
+      "areas": [
           {
             "nombre": "Docencia",
             "nivel": 3,
@@ -68,7 +67,6 @@
             "fundamento": "Demuestra compromiso excepcional con su desarrollo profesional. Ha realizado diplomados y asistido a congresos internacionales."
           }
         ]
-      }
     },
     {
       "timestamp": "2026-09-06T14:45:00Z",
@@ -77,8 +75,7 @@
         "correo": "jorge.ramirez@usach.cl",
         "unidad": "Depto. Ingeniería Informática"
       },
-      "evaluaciones": {
-        "areas": [
+      "areas": [
           {
             "nombre": "Docencia",
             "nivel": 3,
@@ -122,7 +119,6 @@
             "fundamento": "Desarrollo profesional excepcional. Realiza pasantías de investigación en universidades de prestigio."
           }
         ]
-      }
     },
     {
       "timestamp": "2026-09-06T15:00:00Z",
@@ -131,8 +127,7 @@
         "correo": "marcela.fernandez@usach.cl",
         "unidad": "Depto. Asuntos Académicos"
       },
-      "evaluaciones": {
-        "areas": [
+      "areas": [
           {
             "nombre": "Docencia",
             "nivel": 3,
@@ -176,7 +171,6 @@
             "fundamento": "Trayectoria de actualización permanente. Ha completado diplomados especializados."
           }
         ]
-      }
     }
   ],
   "timestamp_evaluaciones": "2026-09-06T14:45:00Z",
