@@ -6,232 +6,891 @@
 <title>Sistema de Evaluación — maqueta v2</title>
 <style>
   :root{
-    --tinta:#1c1f26; --tinta-2:#5b6270; --tinta-3:#8a909c;
-    --linea:#d7dbe2; --linea-fuerte:#b3bac6;
-    --papel:#fff; --fondo:#eef0f4; --acento:#1f4e79; --acento-suave:#eaf0f6;
-    --serie-comp:#2f6fa8; --serie-real:#b3701a;
-    --ok:#1c6b45; --alerta:#8a4b0f; --error:#a02020; --neutro:#565e6c;
-    --n0:#a02020; --n1:#b3701a; --n2:#6b7280; --n3:#2f6fa8; --n4:#1c6b45;
+    --primary:#4F46E5;
+    --primary-dark:#4338CA;
+    --primary-light:#F0F4FF;
+    --secondary:#3B82F6;
+    --success:#10B981;
+    --warning:#F59E0B;
+    --error:#EF4444;
+    --error-light:#FEE2E2;
+    --neutral:#6B7280;
+    --neutral-light:#9CA3AF;
+    --gray-50:#F9FAFB;
+    --gray-100:#F3F4F6;
+    --gray-200:#E5E7EB;
+    --gray-300:#D1D5DB;
+    --gray-400:#9CA3AF;
+    --gray-600:#4B5563;
+    --gray-700:#374151;
+    --gray-900:#111827;
+    --tinta:#1F2937;
+    --n0:#EF4444; --n1:#F59E0B; --n2:#6B7280; --n3:#3B82F6; --n4:#10B981;
   }
+
   *{box-sizing:border-box}
-  body{margin:0;background:var(--fondo);color:var(--tinta);
-       font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;font-size:14px}
+  html,body{margin:0;padding:0}
+  body{
+    background:#F3F4F6;
+    color:var(--tinta);
+    font-family:"Segoe UI","Inter",-apple-system,system-ui,Roboto,Arial,sans-serif;
+    font-size:14px;
+    line-height:1.6;
+  }
 
-  .barra{position:sticky;top:0;z-index:30;background:var(--tinta);color:#fff;
-         padding:9px 16px;display:flex;flex-wrap:wrap;gap:9px;align-items:center}
-  .barra strong{font-weight:600;margin-right:6px}
-  .barra .sep{flex:1}
-  .barra select,.barra button{font:inherit;font-size:13px;border-radius:5px;border:1px solid #464c58;
-        background:#2a2f39;color:#fff;padding:6px 10px;cursor:pointer}
-  .barra button:hover{background:#39404d}
-  .estado{font-size:12px;color:#a9b1bf}
+  /* ========== Header Superior ========== */
+  .header{
+    position:sticky;
+    top:0;
+    z-index:40;
+    background:#fff;
+    border-bottom:1px solid var(--gray-200);
+    box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    padding:14px 32px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:24px;
+  }
+  .header-left{display:flex;align-items:center;gap:16px}
+  .header-logo{font-size:18px;font-weight:700;color:var(--primary)}
+  .header-usuario{display:flex;flex-direction:column;gap:2px}
+  .header-usuario .nombre{font-size:13px;font-weight:600;color:var(--tinta)}
+  .header-usuario .rol{font-size:11px;color:var(--neutral-light)}
+  .header-right{display:flex;align-items:center;gap:14px}
+  .reloj{font-size:12px;color:var(--neutral-light);font-variant-numeric:tabular-nums}
+  .btn-reiniciar{
+    padding:8px 16px;
+    border:1px solid var(--gray-300);
+    background:#fff;
+    color:var(--tinta);
+    border-radius:6px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all 0.2s;
+  }
+  .btn-reiniciar:hover{background:var(--gray-100);border-color:var(--gray-400)}
 
-  .lienzo{max-width:1020px;margin:0 auto;padding:18px 16px 60px}
+  /* ========== Contenido Principal ========== */
+  .contenedor{
+    max-width:1200px;
+    margin:0 auto;
+    padding:32px;
+  }
 
-  .stepper{display:flex;gap:6px;margin-bottom:16px}
-  .paso{flex:1;text-align:center;padding:7px 4px;border-radius:6px;font-size:10.5px;
-        text-transform:uppercase;letter-spacing:.05em;background:#e2e5ea;color:var(--tinta-3);font-weight:600}
-  .paso.activo{background:var(--acento);color:#fff}
-  .paso.hecho{background:var(--acento-suave);color:var(--acento)}
+  /* ========== Stepper ========== */
+  .stepper{
+    display:flex;
+    gap:12px;
+    margin-bottom:32px;
+  }
+  .paso{
+    flex:1;
+    padding:12px 16px;
+    background:#fff;
+    border:2px solid var(--gray-200);
+    border-radius:8px;
+    text-align:center;
+    font-size:13px;
+    font-weight:600;
+    color:var(--neutral);
+    cursor:pointer;
+    transition:all 0.2s;
+  }
+  .paso.activo{
+    background:var(--primary);
+    color:#fff;
+    border-color:var(--primary);
+  }
+  .paso.hecho{
+    background:var(--primary-light);
+    color:var(--primary);
+    border-color:var(--primary-light);
+  }
 
-  .tarjeta{background:var(--papel);border:1px solid var(--linea);border-radius:8px;padding:18px 20px;margin-bottom:14px}
-  .tarjeta h1{font-size:16px;margin:0 0 4px}
-  .tarjeta h2{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--tinta-2);
-              margin:14px 0 6px;font-weight:600}
-  .sub{font-size:12px;color:var(--tinta-2);margin:0 0 14px}
-  .cab-flex{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+  /* ========== Cards ========== */
+  .tarjeta{
+    background:#fff;
+    border-radius:10px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    padding:28px 32px;
+    margin-bottom:24px;
+  }
+  .tarjeta h1{
+    font-size:24px;
+    font-weight:700;
+    margin:0 0 8px;
+    color:var(--tinta);
+  }
+  .tarjeta h2{
+    font-size:14px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--primary);
+    margin:24px 0 12px;
+    padding-top:12px;
+    border-top:1px solid var(--gray-200);
+  }
+  .tarjeta h2:first-of-type{border-top:none;margin-top:0;padding-top:0}
+  .sub{
+    font-size:14px;
+    color:var(--neutral);
+    margin:0 0 20px;
+  }
+  .cab-flex{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+  }
 
-  .avance{background:var(--acento-suave);color:var(--acento);border-radius:14px;padding:5px 12px;
-          font-size:11.5px;font-weight:600;white-space:nowrap}
+  /* ========== Badge de Avance ========== */
+  .avance{
+    background:var(--primary-light);
+    color:var(--primary);
+    border-radius:20px;
+    padding:8px 16px;
+    font-size:12px;
+    font-weight:700;
+    white-space:nowrap;
+  }
 
-  /* ---------- formulario identificación comisionado ---------- */
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .campo-form{margin-bottom:10px}
-  .campo-form label{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;
-                     color:var(--tinta-2);margin-bottom:3px}
-  .campo-form input,.campo-form select{width:100%;font:inherit;font-size:13px;padding:7px 9px;
-        border:1px solid var(--linea-fuerte);border-radius:5px;background:#fff;color:var(--tinta)}
-  .campo-form input:focus,.campo-form select:focus{outline:none;border-color:var(--acento);box-shadow:0 0 0 2px var(--acento-suave)}
-  .campo-form .radio-linea{display:flex;gap:16px;font-size:12.5px;padding-top:6px}
-  .campo-form .radio-linea label{display:flex;gap:5px;align-items:center;cursor:pointer;text-transform:none;
-                                   letter-spacing:0;color:var(--tinta);font-size:12.5px}
+  /* ========== Formulario ========== */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .campo-form{margin-bottom:16px}
+  .campo-form label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--gray-600);
+    margin-bottom:6px;
+  }
+  .campo-form input,.campo-form select{
+    width:100%;
+    font:inherit;
+    font-size:14px;
+    padding:10px 12px;
+    border:1px solid var(--gray-300);
+    border-radius:6px;
+    background:#fff;
+    color:var(--tinta);
+    transition:all 0.2s;
+  }
+  .campo-form input:focus,.campo-form select:focus{
+    outline:none;
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px var(--primary-light);
+  }
+  .campo-form .radio-linea{
+    display:flex;
+    gap:20px;
+    font-size:14px;
+    padding-top:8px;
+  }
+  .campo-form .radio-linea label{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    cursor:pointer;
+    text-transform:none;
+    letter-spacing:0;
+    color:var(--tinta);
+    font-size:14px;
+    font-weight:500;
+    margin:0;
+  }
+  .campo-form .radio-linea input{width:auto;margin:0}
 
-  .aviso{border:1px solid var(--linea-fuerte);background:#f8f9fb;border-radius:6px;padding:12px 14px;font-size:12px;
-         color:var(--tinta-2);line-height:1.55;margin-bottom:10px}
-  .aviso b{color:var(--tinta)}
-  .check{display:flex;gap:9px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--linea);font-size:12.5px}
+  /* ========== Avisos ========== */
+  .aviso{
+    border-left:4px solid var(--primary);
+    background:var(--primary-light);
+    border-radius:6px;
+    padding:14px 16px;
+    font-size:13px;
+    color:var(--gray-700);
+    line-height:1.6;
+    margin-bottom:16px;
+  }
+  .aviso b{color:var(--primary);font-weight:700}
+
+  /* ========== Checkboxes ========== */
+  .check{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    padding:12px 0;
+    border-top:1px solid var(--gray-200);
+    font-size:14px;
+  }
   .check:first-of-type{border-top:none}
-  .check input{margin-top:2px}
-  .conflicto{border:1px dashed var(--linea-fuerte);border-radius:6px;padding:10px 12px;margin-top:8px}
-  .conflicto label{font-size:11.5px;display:block;margin-bottom:5px;color:var(--tinta-2)}
-  .conflicto textarea{width:100%;font:inherit;font-size:12px;border:1px solid var(--linea-fuerte);border-radius:5px;
-                       padding:6px 8px;min-height:44px;resize:vertical;display:none}
+  .check input{
+    margin-top:4px;
+    width:18px;
+    height:18px;
+    cursor:pointer;
+  }
+  .check label{margin:0;cursor:pointer;flex:1;color:var(--tinta)}
 
-  .primario{font:inherit;font-size:13px;padding:9px 16px;border-radius:6px;border:1px solid var(--acento);
-            background:var(--acento);color:#fff;cursor:pointer}
-  .primario:hover{background:#27608f}
-  .primario:disabled{background:#c7ccd4;border-color:#c7ccd4;cursor:not-allowed}
-  .secundario{font:inherit;font-size:12.5px;padding:8px 14px;border-radius:6px;border:1px solid var(--linea-fuerte);
-              background:#fff;color:var(--tinta-2);cursor:pointer}
-  .chico{font:inherit;font-size:11.5px;padding:5px 10px;border-radius:5px;border:1px solid var(--acento);
-         background:#fff;color:var(--acento);cursor:pointer}
-  .chico:hover{background:var(--acento-suave)}
-  .chico.lleno{background:var(--acento);color:#fff}
+  /* ========== Conflicto de Interés ========== */
+  .conflicto{
+    border:2px dashed var(--gray-300);
+    border-radius:6px;
+    padding:14px 16px;
+    margin-top:12px;
+  }
+  .conflicto label{
+    font-size:13px;
+    display:block;
+    margin-bottom:8px;
+    color:var(--neutral);
+    font-weight:500;
+  }
+  .conflicto textarea{
+    width:100%;
+    font:inherit;
+    font-size:13px;
+    border:1px solid var(--gray-300);
+    border-radius:6px;
+    padding:10px 12px;
+    min-height:80px;
+    resize:vertical;
+    display:none;
+    background:#fff;
+  }
+  .conflicto textarea:focus{
+    outline:none;
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px var(--primary-light);
+  }
 
-  .identificacion{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--linea);border-radius:6px;overflow:hidden}
-  .campo{padding:7px 10px;border-right:1px solid var(--linea);border-bottom:1px solid var(--linea)}
+  /* ========== Botones ========== */
+  .primario{
+    font:inherit;
+    font-size:14px;
+    font-weight:600;
+    padding:12px 20px;
+    border-radius:6px;
+    border:none;
+    background:var(--primary);
+    color:#fff;
+    cursor:pointer;
+    transition:all 0.2s;
+  }
+  .primario:hover:not(:disabled){background:var(--primary-dark)}
+  .primario:disabled{background:var(--gray-300);cursor:not-allowed;color:var(--gray-600)}
+
+  .secundario{
+    font:inherit;
+    font-size:14px;
+    font-weight:600;
+    padding:10px 18px;
+    border-radius:6px;
+    border:1px solid var(--gray-300);
+    background:#fff;
+    color:var(--tinta);
+    cursor:pointer;
+    transition:all 0.2s;
+  }
+  .secundario:hover{background:var(--gray-100);border-color:var(--gray-400)}
+
+  .chico{
+    font:inherit;
+    font-size:12px;
+    font-weight:600;
+    padding:6px 12px;
+    border-radius:4px;
+    border:1px solid var(--primary);
+    background:#fff;
+    color:var(--primary);
+    cursor:pointer;
+    transition:all 0.2s;
+  }
+  .chico:hover{background:var(--primary-light)}
+  .chico.lleno{
+    background:var(--primary);
+    color:#fff;
+  }
+  .chico.lleno:hover{background:var(--primary-dark)}
+
+  /* ========== Identificación Grid ========== */
+  .identificacion{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    border:1px solid var(--gray-200);
+    border-radius:8px;
+    overflow:hidden;
+    background:#fff;
+  }
+  .campo{
+    padding:14px 16px;
+    border-right:1px solid var(--gray-200);
+    border-bottom:1px solid var(--gray-200);
+  }
   .campo:nth-child(3n){border-right:0}
   .campo:nth-last-child(-n+3){border-bottom:0}
-  .campo .et{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--tinta-2)}
-  .campo .va{font-size:13px;margin-top:2px}
+  .campo:nth-child(3n-2){background:var(--gray-50)}
+  .campo .et{
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--gray-600);
+  }
+  .campo .va{
+    font-size:14px;
+    font-weight:600;
+    margin-top:4px;
+    color:var(--tinta);
+  }
 
-  .reservada{border:1px dashed var(--alerta);background:#fffaf3;border-radius:6px;padding:10px 12px;margin-top:10px;font-size:12px}
-  .reservada b{color:var(--alerta);display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
-  .reservada p{margin:0;color:var(--tinta-2);line-height:1.5}
+  /* ========== Hoja Reservada ========== */
+  .reservada{
+    border:2px solid var(--warning);
+    background:#FFFBF0;
+    border-radius:6px;
+    padding:14px 16px;
+    margin-top:16px;
+    font-size:13px;
+  }
+  .reservada b{
+    color:var(--warning);
+    display:block;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-bottom:6px;
+    font-weight:700;
+  }
+  .reservada p{margin:0;color:var(--gray-700);line-height:1.6}
 
-  /* ---------- cuadro resumen ---------- */
-  table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11.5px}
-  thead th{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--tinta-2);
-           text-align:left;padding:5px 6px;border-bottom:1.5px solid var(--linea-fuerte);font-weight:600}
-  td{padding:5px 6px;border-bottom:1px solid var(--linea);vertical-align:top;line-height:1.35}
+  /* ========== Tablas ========== */
+  table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+    font-size:13px;
+    margin-bottom:20px;
+  }
+  thead{background:var(--gray-50)}
+  thead th{
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--gray-600);
+    text-align:left;
+    padding:12px 14px;
+    border-bottom:2px solid var(--gray-300);
+  }
+  td{
+    padding:12px 14px;
+    border-bottom:1px solid var(--gray-200);
+    vertical-align:top;
+    line-height:1.5;
+  }
+  tbody tr:nth-child(even){background:var(--gray-50)}
+  tfoot td{
+    border-top:2px solid var(--gray-300);
+    font-weight:700;
+    background:var(--gray-50);
+  }
   .num{text-align:right;font-variant-numeric:tabular-nums}
-  .tabla-resumen tbody tr:nth-child(even){background:#f8f9fb}
-  .tabla-resumen tfoot td{border-top:1.5px solid var(--linea-fuerte);font-weight:600}
 
-  .evid{display:flex;flex-wrap:wrap;gap:3px}
-  .doc{font-size:9px;border:1px solid var(--linea-fuerte);border-radius:3px;padding:1px 5px;background:#f8f9fb;
-       color:var(--tinta-2);cursor:pointer}
-  .doc:hover{border-color:var(--acento);color:var(--acento)}
-  .est-badge{font-size:9px;text-transform:uppercase;letter-spacing:.04em;padding:2px 6px;border-radius:3px;border:1px solid}
-  .est-badge.cumplido{background:#eaf5ee;border-color:#9ac6ae;color:var(--ok)}
-  .est-badge.parcial{background:#fdf1e3;border-color:#e2bd8e;color:var(--alerta)}
-  .est-badge.no{background:#fbeaea;border-color:#dda6a6;color:var(--error)}
-  .est-badge.repro{background:#f1f2f4;border-color:var(--linea-fuerte);color:var(--neutro)}
+  /* ========== Documentos y Badges ========== */
+  .evid{display:flex;flex-wrap:wrap;gap:6px}
+  .doc{
+    font-size:11px;
+    border:1px solid var(--gray-300);
+    border-radius:4px;
+    padding:4px 8px;
+    background:#fff;
+    color:var(--neutral-light);
+    cursor:pointer;
+    transition:all 0.2s;
+  }
+  .doc:hover{border-color:var(--primary);color:var(--primary)}
 
-  .area-banda{background:var(--acento-suave)}
-  .area-banda td{padding:7px 8px}
-  .area-titulo{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;color:var(--acento)}
-  .area-info{font-size:10.5px;color:var(--tinta-2)}
-  .nivel-chip{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px}
-  .nivel-chip[data-n="0"]{background:#fbeaea;color:var(--n0)} .nivel-chip[data-n="1"]{background:#fdf1e3;color:var(--n1)}
-  .nivel-chip[data-n="2"]{background:#f1f2f4;color:var(--n2)} .nivel-chip[data-n="3"]{background:#eaf0f6;color:var(--n3)}
-  .nivel-chip[data-n="4"]{background:#eaf5ee;color:var(--n4)}
+  .est-badge{
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    padding:4px 8px;
+    border-radius:4px;
+    border:1px solid;
+    display:inline-block;
+  }
+  .est-badge.cumplido{background:#DBEAFE;border-color:#93C5FD;color:var(--secondary)}
+  .est-badge.parcial{background:#FEF3C7;border-color:#FCD34D;color:var(--warning)}
+  .est-badge.no{background:#FEE2E2;border-color:#FECACA;color:var(--error)}
+  .est-badge.repro{background:var(--gray-100);border-color:var(--gray-300);color:var(--neutral)}
 
-  /* ---------- CF preview ---------- */
-  .cf{display:flex;align-items:center;gap:16px;background:var(--acento-suave);border-radius:8px;padding:14px 18px;margin-top:12px}
-  .cf .n{font-size:34px;font-weight:700;color:var(--acento);font-variant-numeric:tabular-nums;line-height:1}
-  .cf .txt{font-size:11.5px;color:var(--tinta-2);line-height:1.5}
-  .cf .txt b{color:var(--acento)}
+  /* ========== Nivel Chip ========== */
+  .nivel-chip{
+    display:inline-block;
+    font-size:11px;
+    font-weight:700;
+    padding:2px 10px;
+    border-radius:12px;
+    margin-left:8px;
+  }
+  .nivel-chip[data-n="0"]{background:#FEE2E2;color:var(--n0)}
+  .nivel-chip[data-n="1"]{background:#FEF3C7;color:var(--n1)}
+  .nivel-chip[data-n="2"]{background:var(--gray-100);color:var(--n2)}
+  .nivel-chip[data-n="3"]{background:#DBEAFE;color:var(--n3)}
+  .nivel-chip[data-n="4"]{background:#DCFCE7;color:var(--n4)}
 
-  .nota{font-size:10.5px;color:var(--tinta-2);border-left:3px solid var(--linea-fuerte);padding:6px 10px;margin-top:10px;background:#f8f9fb;line-height:1.5}
+  /* ========== Banda de Área ========== */
+  .area-banda{background:var(--primary-light)}
+  .area-banda td{padding:14px 14px;font-weight:600}
+  .area-titulo{
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--primary);
+  }
+  .area-info{font-size:11px;color:var(--neutral-light)}
 
-  /* ---------- registro de proceso ---------- */
-  .registro{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .cron{display:flex;align-items:baseline;gap:8px}
-  .cron .n{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
-  .incidentes{border:1px solid var(--linea);border-radius:6px;padding:8px 10px}
-  .inc-fila{display:flex;gap:6px;margin-bottom:6px}
-  .inc-fila input{flex:1;font:inherit;font-size:12px;border:1px solid var(--linea-fuerte);border-radius:4px;padding:5px 7px}
-  .inc-fila select{font:inherit;font-size:11px;border:1px solid var(--linea-fuerte);border-radius:4px;padding:5px 6px}
-  .inc-fila button{font:inherit;font-size:12px;border:1px solid var(--acento);background:var(--acento);color:#fff;
-                    border-radius:4px;padding:5px 10px;cursor:pointer}
-  .inc-lista{list-style:none;margin:0;padding:0;font-size:11px;color:var(--tinta-2)}
-  .inc-lista li{padding:4px 0;border-top:1px solid var(--linea);display:flex;gap:6px}
-  .inc-lista .tag{font-size:9px;text-transform:uppercase;padding:1px 5px;border-radius:3px;border:1px solid var(--linea-fuerte)}
-  .inc-vacio{color:var(--tinta-3);font-size:11px;padding:6px 0}
+  /* ========== CF Preview ========== */
+  .cf{
+    display:flex;
+    align-items:center;
+    gap:20px;
+    background:var(--primary-light);
+    border:1px solid var(--primary);
+    border-radius:8px;
+    padding:20px 24px;
+    margin-top:16px;
+  }
+  .cf .n{
+    font-size:42px;
+    font-weight:700;
+    color:var(--primary);
+    font-variant-numeric:tabular-nums;
+    line-height:1;
+  }
+  .cf .txt{
+    font-size:13px;
+    color:var(--gray-700);
+    line-height:1.6;
+  }
+  .cf .txt b{color:var(--primary);font-weight:700}
 
-  .avisos{margin-top:4px}
-  .aviso-item{padding:6px 10px;border-left:3px solid;margin-bottom:5px;background:#f7f8fa;font-size:12px}
+  /* ========== Notas ========== */
+  .nota{
+    font-size:12px;
+    color:var(--neutral);
+    border-left:4px solid var(--gray-300);
+    padding:12px 16px;
+    margin-top:16px;
+    background:var(--gray-50);
+    line-height:1.6;
+    border-radius:4px;
+  }
+
+  /* ========== Registro de Proceso ========== */
+  .registro{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+  }
+  .cron{
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+  }
+  .cron .n{
+    font-size:28px;
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+  }
+  .cron .txt{font-size:12px;color:var(--neutral-light)}
+
+  /* ========== Incidentes ========== */
+  .incidentes{
+    border:1px solid var(--gray-300);
+    border-radius:6px;
+    padding:12px 14px;
+    background:#fff;
+  }
+  .inc-fila{
+    display:flex;
+    gap:8px;
+    margin-bottom:12px;
+  }
+  .inc-fila input{
+    flex:1;
+    font:inherit;
+    font-size:13px;
+    border:1px solid var(--gray-300);
+    border-radius:4px;
+    padding:8px 10px;
+  }
+  .inc-fila select{
+    font:inherit;
+    font-size:12px;
+    border:1px solid var(--gray-300);
+    border-radius:4px;
+    padding:8px 10px;
+    background:#fff;
+  }
+  .inc-fila button{
+    font:inherit;
+    font-size:12px;
+    font-weight:600;
+    border:none;
+    background:var(--primary);
+    color:#fff;
+    border-radius:4px;
+    padding:8px 12px;
+    cursor:pointer;
+  }
+  .inc-fila button:hover{background:var(--primary-dark)}
+
+  .inc-lista{
+    list-style:none;
+    margin:0;
+    padding:0;
+    font-size:12px;
+    color:var(--neutral);
+  }
+  .inc-lista li{
+    padding:8px 0;
+    border-top:1px solid var(--gray-200);
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .inc-lista .tag{
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    padding:2px 6px;
+    border-radius:3px;
+    border:1px solid var(--gray-300);
+    background:var(--gray-50);
+  }
+  .inc-vacio{
+    color:var(--neutral-light);
+    font-size:12px;
+    padding:8px 0;
+  }
+
+  /* ========== Avisos de Validación ========== */
+  .avisos{margin-top:12px}
+  .aviso-item{
+    padding:12px 14px;
+    border-left:4px solid;
+    margin-bottom:8px;
+    background:var(--gray-50);
+    font-size:13px;
+    border-radius:4px;
+  }
   .aviso-item.e{border-color:var(--error);color:var(--error)}
-  .aviso-item.k{border-color:var(--ok);color:var(--ok)}
+  .aviso-item.k{border-color:var(--success);color:var(--success)}
 
-  .enviado{text-align:center;padding:30px 10px}
-  .enviado .icono{font-size:38px;color:var(--ok);margin-bottom:6px}
-  .enviado h1{color:var(--ok)}
+  /* ========== Pantalla Enviado ========== */
+  .enviado{
+    text-align:center;
+    padding:48px 32px;
+  }
+  .enviado .icono{
+    font-size:56px;
+    color:var(--success);
+    margin-bottom:12px;
+    line-height:1;
+  }
+  .enviado h1{color:var(--success)}
 
+  /* ========== Oculto ========== */
   .oculto{display:none!important}
 
-  /* ---------- modal de evaluación ---------- */
-  .modal-fondo{position:fixed;inset:0;background:rgba(20,24,32,.5);z-index:100;display:flex;
-               align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto}
-  .modal{background:#fff;border-radius:10px;max-width:700px;width:100%;padding:20px 22px;margin-bottom:40px}
-  .modal-cab{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--acento);
-             padding-bottom:8px;margin-bottom:12px}
-  .modal-cab h2{font-size:15px;margin:0;color:var(--acento);text-transform:none;letter-spacing:0}
-  .modal-cab .peso{font-size:11px;color:var(--tinta-2);margin-top:2px}
-  .cerrar-modal{border:0;background:transparent;font-size:20px;color:var(--tinta-3);cursor:pointer;line-height:1}
+  /* ========== Modal ========== */
+  .modal-fondo{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,0.5);
+    z-index:100;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:32px 16px;
+    overflow-y:auto;
+  }
+  .modal{
+    background:#fff;
+    border-radius:10px;
+    max-width:800px;
+    width:100%;
+    padding:28px 32px;
+    margin-bottom:48px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.15);
+  }
+  .modal-cab{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    border-bottom:2px solid var(--primary);
+    padding-bottom:12px;
+    margin-bottom:16px;
+  }
+  .modal-cab h2{
+    font-size:18px;
+    font-weight:700;
+    margin:0;
+    color:var(--primary);
+  }
+  .modal-cab .peso{
+    font-size:12px;
+    color:var(--neutral);
+    margin-top:4px;
+  }
+  .cerrar-modal{
+    border:0;
+    background:transparent;
+    font-size:24px;
+    color:var(--neutral-light);
+    cursor:pointer;
+    line-height:1;
+    padding:0;
+  }
   .cerrar-modal:hover{color:var(--error)}
 
-  .escala{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
-  .nivel{border:2px solid var(--linea-fuerte);border-radius:6px;padding:8px 6px;cursor:pointer;text-align:center;
-         font-size:11px;background:#fff}
-  .nivel .n{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
-  .nivel .cat{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
-  .nivel[data-n="0"]{color:var(--n0)} .nivel[data-n="1"]{color:var(--n1)}
-  .nivel[data-n="2"]{color:var(--n2)} .nivel[data-n="3"]{color:var(--n3)} .nivel[data-n="4"]{color:var(--n4)}
-  .nivel.sel[data-n="0"]{background:#fbeaea;border-color:var(--n0)}
-  .nivel.sel[data-n="1"]{background:#fdf1e3;border-color:var(--n1)}
-  .nivel.sel[data-n="2"]{background:#f1f2f4;border-color:var(--n2)}
-  .nivel.sel[data-n="3"]{background:#eaf0f6;border-color:var(--n3)}
-  .nivel.sel[data-n="4"]{background:#eaf5ee;border-color:var(--n4)}
-  .desc-nivel{font-size:11px;color:var(--tinta-2);background:#f8f9fb;border-radius:5px;padding:8px 10px;
-              margin-bottom:10px;line-height:1.5;min-height:34px}
+  /* ========== Escala de Niveles ========== */
+  .escala{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .nivel{
+    border:2px solid var(--gray-300);
+    border-radius:6px;
+    padding:12px 8px;
+    cursor:pointer;
+    text-align:center;
+    font-size:12px;
+    background:#fff;
+    transition:all 0.2s;
+  }
+  .nivel .n{
+    font-size:22px;
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+  }
+  .nivel .cat{
+    display:block;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    margin-top:4px;
+    font-weight:600;
+  }
+  .nivel[data-n="0"]{color:var(--n0)}
+  .nivel[data-n="1"]{color:var(--n1)}
+  .nivel[data-n="2"]{color:var(--n2)}
+  .nivel[data-n="3"]{color:var(--n3)}
+  .nivel[data-n="4"]{color:var(--n4)}
 
-  .campo-eval{margin-bottom:9px}
-  .campo-eval label{display:flex;justify-content:space-between;font-size:10.5px;text-transform:uppercase;
-                     letter-spacing:.05em;color:var(--tinta-2);margin-bottom:3px}
-  .campo-eval label .oblig{color:var(--error);text-transform:none;letter-spacing:0;font-size:10px}
-  .campo-eval textarea{width:100%;font:inherit;font-size:12px;border:1px solid var(--linea-fuerte);border-radius:5px;
-                        padding:7px 9px;min-height:52px;resize:vertical}
-  .campo-eval textarea:focus{outline:none;border-color:var(--acento);box-shadow:0 0 0 2px var(--acento-suave)}
+  .nivel.sel[data-n="0"]{background:#FEE2E2;border-color:var(--n0)}
+  .nivel.sel[data-n="1"]{background:#FEF3C7;border-color:var(--n1)}
+  .nivel.sel[data-n="2"]{background:var(--gray-100);border-color:var(--n2)}
+  .nivel.sel[data-n="3"]{background:#DBEAFE;border-color:var(--n3)}
+  .nivel.sel[data-n="4"]{background:#DCFCE7;border-color:var(--n4)}
 
-  .plegable{border:1px solid var(--linea);border-radius:6px;margin-bottom:8px;overflow:hidden}
-  .plegable summary{cursor:pointer;padding:8px 10px;font-size:11.5px;font-weight:600;color:var(--acento);
-                     background:#f8f9fb;list-style:none}
+  .desc-nivel{
+    font-size:13px;
+    color:var(--gray-700);
+    background:var(--gray-50);
+    border-radius:6px;
+    padding:12px 14px;
+    margin-bottom:16px;
+    line-height:1.6;
+    min-height:42px;
+  }
+
+  /* ========== Campos de Evaluación ========== */
+  .campo-eval{margin-bottom:12px}
+  .campo-eval label{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--gray-600);
+    margin-bottom:6px;
+  }
+  .campo-eval label .oblig{
+    color:var(--error);
+    text-transform:none;
+    letter-spacing:0;
+    font-size:11px;
+    font-weight:600;
+  }
+  .campo-eval textarea{
+    width:100%;
+    font:inherit;
+    font-size:13px;
+    border:1px solid var(--gray-300);
+    border-radius:6px;
+    padding:10px 12px;
+    min-height:80px;
+    resize:vertical;
+    background:#fff;
+  }
+  .campo-eval textarea:focus{
+    outline:none;
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px var(--primary-light);
+  }
+
+  /* ========== Plegables ========== */
+  .plegable{
+    border:1px solid var(--gray-300);
+    border-radius:6px;
+    margin-bottom:12px;
+    overflow:hidden;
+  }
+  .plegable summary{
+    cursor:pointer;
+    padding:12px 14px;
+    font-size:13px;
+    font-weight:700;
+    color:var(--primary);
+    background:var(--gray-50);
+    list-style:none;
+    transition:background 0.2s;
+  }
+  .plegable summary:hover{background:var(--gray-100)}
   .plegable summary::-webkit-details-marker{display:none}
-  .plegable summary:before{content:"▸ "}
-  .plegable[open] summary:before{content:"▾ "}
-  .plegable .contenido{padding:10px 12px;font-size:11.5px;color:var(--tinta-2);line-height:1.55}
-  .plegable .contenido h3{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--tinta);margin:8px 0 3px}
+  .plegable summary:before{content:"▶ "}
+  .plegable[open] summary:before{content:"▼ "}
+  .plegable .contenido{
+    padding:14px 16px;
+    font-size:13px;
+    color:var(--gray-700);
+    line-height:1.6;
+    background:#fff;
+  }
+  .plegable .contenido h3{
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--primary);
+    margin:12px 0 6px;
+  }
   .plegable .contenido h3:first-child{margin-top:0}
-  .rub-tabla{width:100%;border-collapse:collapse;margin-top:4px}
-  .rub-tabla td{padding:4px 6px;border-bottom:1px solid var(--linea);font-size:11px;vertical-align:top}
-  .rub-tabla td:first-child{font-weight:600;white-space:nowrap}
-  .pendiente-guia{font-style:italic;color:var(--tinta-3)}
+  .plegable .contenido p{margin:0 0 12px;line-height:1.6}
 
-  .modal-pie{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;border-top:1px solid var(--linea);padding-top:12px}
+  .rub-tabla{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:8px;
+    font-size:12px;
+  }
+  .rub-tabla td{
+    padding:8px 10px;
+    border-bottom:1px solid var(--gray-300);
+    font-size:12px;
+    vertical-align:top;
+  }
+  .rub-tabla td:first-child{
+    font-weight:700;
+    white-space:nowrap;
+    width:160px;
+  }
+  .pendiente-guia{
+    font-style:italic;
+    color:var(--neutral-light);
+    font-size:12px;
+  }
 
-  @media (max-width:760px){ .identificacion,.escala,.registro,.grid2{grid-template-columns:repeat(2,1fr)} }
+  /* ========== Pie del Modal ========== */
+  .modal-pie{
+    display:flex;
+    justify-content:flex-end;
+    gap:12px;
+    margin-top:20px;
+    border-top:1px solid var(--gray-300);
+    padding-top:16px;
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width:960px){
+    .identificacion,.escala,.registro,.grid2{grid-template-columns:repeat(2,1fr)}
+    .header{padding:12px 20px;gap:16px}
+    .contenedor{padding:20px}
+    .tarjeta{padding:20px 24px}
+  }
+  @media (max-width:640px){
+    .header{flex-direction:column;align-items:flex-start}
+    .header-left,.header-right{width:100%}
+    .header-right{justify-content:space-between}
+    .identificacion,.escala,.grid2{grid-template-columns:1fr}
+    .registro{grid-template-columns:1fr}
+    .stepper{flex-direction:column}
+    .paso{font-size:12px;padding:10px}
+  }
 </style>
 </head>
 <body>
 
-<div class="barra">
-  <strong>Sistema de Evaluación — maqueta v2</strong>
-  <span class="sep"></span>
-  <span class="estado" id="reloj">tiempo en pantalla: 00:00</span>
-  <button id="btn-reiniciar">Reiniciar maqueta</button>
+<!-- ========== Header ========== -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">📊 Sistema de Evaluación</div>
+    <div class="header-usuario">
+      <div class="nombre">Comisión de Evaluación</div>
+      <div class="rol">Período 2026</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="reloj" id="reloj">tiempo: 00:00</div>
+    <button class="btn-reiniciar" id="btn-reiniciar">Reiniciar</button>
+  </div>
 </div>
 
-<div class="lienzo">
+<!-- ========== Contenido Principal ========== -->
+<div class="contenedor">
 
+  <!-- Stepper -->
   <div class="stepper" id="stepper">
     <div class="paso" data-p="0">1. Acceso e identificación</div>
-    <div class="paso" data-p="1">2. Antecedentes y evaluación por área</div>
+    <div class="paso" data-p="1">2. Antecedentes y evaluación</div>
     <div class="paso" data-p="2">3. Registro y envío</div>
   </div>
 
-  <!-- ================= PASO 0 ================= -->
+  <!-- ================= PASO 0: IDENTIFICACIÓN ================= -->
   <div class="tarjeta paso-c" data-c="0">
     <h1>Caso asignado: Nombre Apellido Apellido</h1>
     <p class="sub">Depto. de Ingeniería Industrial · Profesor Asociado · Período evaluativo 2026</p>
 
     <h2>Identificación del integrante de la comisión</h2>
     <div class="grid2">
-      <div class="campo-form"><label for="c-nombre">Nombre completo</label><input id="c-nombre" type="text" placeholder="Nombre Apellido Apellido"></div>
-      <div class="campo-form"><label for="c-correo">Correo institucional</label><input id="c-correo" type="email" placeholder="nombre.apellido@usach.cl"></div>
-      <div class="campo-form"><label for="c-unidad">Unidad de desempeño</label><input id="c-unidad" type="text" placeholder="Depto. de Ingeniería Informática"></div>
-      <div class="campo-form"><label for="c-tipo">Tipo de integrante</label>
+      <div class="campo-form">
+        <label for="c-nombre">Nombre completo</label>
+        <input id="c-nombre" type="text" placeholder="Nombre Apellido Apellido">
+      </div>
+      <div class="campo-form">
+        <label for="c-correo">Correo institucional</label>
+        <input id="c-correo" type="email" placeholder="nombre.apellido@usach.cl">
+      </div>
+      <div class="campo-form">
+        <label for="c-unidad">Unidad de desempeño</label>
+        <input id="c-unidad" type="text" placeholder="Depto. de Ingeniería Informática">
+      </div>
+      <div class="campo-form">
+        <label for="c-tipo">Tipo de integrante</label>
         <select id="c-tipo">
           <option value="">Seleccione…</option>
           <option>Director o Directora de Departamento</option>
@@ -248,6 +907,7 @@
       </div>
     </div>
 
+    <h2>Compromisos previos</h2>
     <div class="aviso">
       <b>Confidencialidad (Art. 52).</b> La información de este expediente —informes, evidencias, deliberaciones y
       resultados preliminares— es confidencial o reservada. No debe compartirse, copiarse ni comentarse fuera de la
@@ -267,7 +927,7 @@
       <input type="checkbox" id="chk-sinconflicto">
       <label for="chk-sinconflicto">Declaro que no poseo un conflicto de interés respecto del académico o académica evaluado.</label>
     </div>
-    <div class="radio-linea" style="margin:4px 0 0 26px">
+    <div class="radio-linea" style="margin:8px 0 0 32px">
       <label><input type="radio" name="conflicto" value="no" checked> Sin conflicto</label>
       <label><input type="radio" name="conflicto" value="si"> Declaro un posible conflicto</label>
     </div>
@@ -276,22 +936,23 @@
       <textarea id="txt-conflicto" placeholder="Ej.: dirijo la tesis de un estudiante del evaluado…"></textarea>
     </div>
 
-    <div style="margin-top:16px;display:flex;gap:8px">
+    <div style="margin-top:24px;display:flex;gap:12px">
       <button class="primario" id="btn-p0" disabled>Iniciar evaluación</button>
-      <span class="estado" id="msg-p0" style="color:var(--tinta-3)"></span>
+      <span class="estado" id="msg-p0" style="color:var(--neutral-light);font-size:12px"></span>
     </div>
   </div>
 
-  <!-- ================= PASO 1 ================= -->
+  <!-- ================= PASO 1: ANTECEDENTES Y EVALUACIÓN ================= -->
   <div class="tarjeta paso-c oculto" data-c="1">
     <div class="cab-flex">
       <div>
         <h1>Antecedentes y evaluación por área</h1>
-        <p class="sub">Convenio de Desempeño Académico e Informe Anual de Actividades, con el juicio evaluativo por área.</p>
+        <p class="sub">Convenio de Desempeño Académico e Informe Anual de Actividades, con juicio evaluativo por área.</p>
       </div>
       <span class="avance" id="avance">0 de 7 áreas evaluadas</span>
     </div>
 
+    <h2>Identificación del académico</h2>
     <div class="identificacion">
       <div class="campo"><div class="et">Académico o académica</div><div class="va">Nombre Apellido Apellido</div></div>
       <div class="campo"><div class="et">Unidad académica</div><div class="va">Depto. de Ingeniería Industrial</div></div>
@@ -309,19 +970,38 @@
     <h2>Cuadro resumen</h2>
     <table class="tabla-resumen">
       <colgroup><col style="width:30%"><col style="width:17.5%"><col style="width:17.5%"><col style="width:17.5%"><col style="width:17.5%"></colgroup>
-      <thead><tr><th>Área</th><th class="num">H. semanales declaradas</th><th class="num">%</th>
-        <th class="num">H. semanales realizadas</th><th class="num">%</th></tr></thead>
+      <thead><tr>
+        <th>Área</th>
+        <th class="num">H. declaradas</th>
+        <th class="num">%</th>
+        <th class="num">H. realizadas</th>
+        <th class="num">%</th>
+      </tr></thead>
       <tbody id="cuerpo-resumen"></tbody>
-      <tfoot><tr><td>Total</td><td class="num" id="r-hc"></td><td class="num" id="r-phc"></td>
-        <td class="num" id="r-hr"></td><td class="num" id="r-phr"></td></tr></tfoot>
+      <tfoot><tr>
+        <td>Total</td>
+        <td class="num" id="r-hc"></td>
+        <td class="num" id="r-phc"></td>
+        <td class="num" id="r-hr"></td>
+        <td class="num" id="r-phr"></td>
+      </tr></tfoot>
     </table>
 
     <h2>Compromisos y resultado del período, por área</h2>
     <table>
-      <colgroup><col style="width:19%"><col style="width:23%"><col style="width:18%"><col style="width:14%">
-        <col style="width:8%"><col style="width:8%"><col style="width:10%"></colgroup>
-      <thead><tr><th>Actividad (del CDA)</th><th>Resultado obtenido</th><th>Evidencia</th><th>Estado</th>
-        <th class="num">H. comp.</th><th class="num">H. real.</th><th class="no-imprime"></th></tr></thead>
+      <colgroup>
+        <col style="width:19%"><col style="width:23%"><col style="width:18%"><col style="width:14%">
+        <col style="width:8%"><col style="width:8%"><col style="width:10%">
+      </colgroup>
+      <thead><tr>
+        <th>Actividad (del CDA)</th>
+        <th>Resultado obtenido</th>
+        <th>Evidencia</th>
+        <th>Estado</th>
+        <th class="num">H. comp.</th>
+        <th class="num">H. real.</th>
+        <th></th>
+      </tr></thead>
       <tbody id="cuerpo-ant"></tbody>
     </table>
 
@@ -333,21 +1013,21 @@
 
     <h2>Vista preliminar de la calificación</h2>
     <div class="cf">
-      <div><div class="n" id="cf-valor">—</div><div class="estado" id="cf-estado" style="color:var(--tinta-3);font-size:10.5px"></div></div>
+      <div><div class="n" id="cf-valor">—</div><div style="font-size:11px;color:var(--neutral-light)" id="cf-estado"></div></div>
       <div class="txt">
         Suma ponderada de los niveles asignados por horas comprometidas (Art. 35), calculada automáticamente a partir
-        de sus respuestas.<br><b>Preliminar y personal.</b> No constituye la calificación final: esa surge de la
+        de sus respuestas. <b>Preliminar y personal.</b> No constituye la calificación final: esa surge de la
         deliberación conjunta de la comisión.
       </div>
     </div>
 
-    <div style="margin-top:14px;display:flex;gap:8px">
+    <div style="margin-top:20px;display:flex;gap:12px">
       <button class="secundario" data-atras="0">Atrás</button>
       <button class="primario" data-adelante="2">Continuar al registro y envío</button>
     </div>
   </div>
 
-  <!-- ================= PASO 2 ================= -->
+  <!-- ================= PASO 2: REGISTRO Y ENVÍO ================= -->
   <div class="tarjeta paso-c oculto" data-c="2">
     <h1>Registro del proceso y envío</h1>
     <p class="sub">La línea de acción sobre el piloto exige registrar tiempo, dudas e incidentes de cada evaluación,
@@ -356,19 +1036,30 @@
     <div class="registro">
       <div>
         <h2>Tiempo empleado en esta evaluación</h2>
-        <div class="cron"><span class="n" id="cron-total">00:00</span><span class="estado">desde que inició el paso 2</span></div>
+        <div class="cron">
+          <span class="n" id="cron-total">00:00</span>
+          <span class="txt">desde que inició el paso 2</span>
+        </div>
         <h2>Comprensión de las reglas del período</h2>
-        <div class="check"><input type="checkbox" id="chk-comp1">
-          <label for="chk-comp1">Comprendí que las horas ponderan pero no determinan el nivel de desempeño (Art. 35).</label></div>
-        <div class="check"><input type="checkbox" id="chk-comp2">
-          <label for="chk-comp2">Comprendí el efecto y el alcance de las circunstancias declaradas del período (Art. 23).</label></div>
+        <div class="check">
+          <input type="checkbox" id="chk-comp1">
+          <label for="chk-comp1">Comprendí que las horas ponderan pero no determinan el nivel de desempeño (Art. 35).</label>
+        </div>
+        <div class="check">
+          <input type="checkbox" id="chk-comp2">
+          <label for="chk-comp2">Comprendí el efecto y el alcance de las circunstancias declaradas del período (Art. 23).</label>
+        </div>
       </div>
       <div>
         <h2>Dudas o incidentes durante la evaluación</h2>
         <div class="incidentes">
           <div class="inc-fila">
-            <select id="inc-tipo"><option>Duda de criterio</option><option>Duda de evidencia</option>
-              <option>Incidente técnico</option><option>Otro</option></select>
+            <select id="inc-tipo">
+              <option>Duda de criterio</option>
+              <option>Duda de evidencia</option>
+              <option>Incidente técnico</option>
+              <option>Otro</option>
+            </select>
             <input type="text" id="inc-texto" placeholder="Descripción breve…">
             <button id="btn-inc">Registrar</button>
           </div>
@@ -380,19 +1071,19 @@
     <h2>Resumen antes de enviar</h2>
     <div class="avisos" id="avisos-p2"></div>
 
-    <div style="margin-top:14px;display:flex;gap:8px">
+    <div style="margin-top:20px;display:flex;gap:12px">
       <button class="secundario" data-atras="1">Atrás</button>
       <button class="primario" id="btn-enviar">Enviar evaluación a la Secretaría Técnica</button>
     </div>
   </div>
 
-  <!-- ================= ENVIADO ================= -->
+  <!-- ================= PANTALLA ENVIADO ================= -->
   <div class="tarjeta enviado oculto" id="pantalla-enviado">
     <div class="icono">✓</div>
     <h1>Evaluación enviada</h1>
     <p class="sub">Se registró su calificación por área, sus fundamentos y su tiempo de evaluación. Quedará reservada
        hasta la deliberación conjunta de la comisión.</p>
-    <div class="nota" style="text-align:left;max-width:620px;margin:14px auto 0">
+    <div class="nota" style="text-align:left;max-width:620px;margin:20px auto 0">
       Próximo paso, aún por diseñar: cuando los tres comisionados envíen su evaluación, la Secretaría Técnica
       consolidará los niveles por área, calculará la divergencia entre evaluadores antes de cualquier ajuste y
       convocará a la deliberación conjunta que fija el nivel definitivo y la calificación final (Art. 35 y Título IX).
@@ -405,7 +1096,10 @@
 <div class="modal-fondo oculto" id="modal-fondo">
   <div class="modal">
     <div class="modal-cab">
-      <div><h2 id="modal-area">Área</h2><div class="peso" id="modal-peso"></div></div>
+      <div>
+        <h2 id="modal-area">Área</h2>
+        <div class="peso" id="modal-peso"></div>
+      </div>
       <button class="cerrar-modal" id="modal-cerrar">✕</button>
     </div>
 
@@ -414,11 +1108,26 @@
       <div class="contenido">
         <h3>Criterios de lectura del juicio holístico</h3>
         <table class="rub-tabla">
-          <tr><td>Relación con el CDA</td><td>¿Las actividades realizadas corresponden a los compromisos formalizados y al peso relativo asignado?</td></tr>
-          <tr><td>Actividad comprobada</td><td>¿Los antecedentes permiten identificar la actividad, el período, el rol y el producto informado?</td></tr>
-          <tr><td>Correspondencia con la jerarquía</td><td>¿El rol, autonomía y alcance son consistentes con las funciones esperadas para la jerarquía?</td></tr>
-          <tr><td>Desarrollo de la actividad</td><td>¿Muestra ejecución regular, oportunidad, completitud y pertinencia con el área?</td></tr>
-          <tr><td>Aporte verificable</td><td>¿Existen resultados o contribuciones que justifiquen un nivel superior al esperado?</td></tr>
+          <tr>
+            <td>Relación con el CDA</td>
+            <td>¿Las actividades realizadas corresponden a los compromisos formalizados y al peso relativo asignado?</td>
+          </tr>
+          <tr>
+            <td>Actividad comprobada</td>
+            <td>¿Los antecedentes permiten identificar la actividad, el período, el rol y el producto informado?</td>
+          </tr>
+          <tr>
+            <td>Correspondencia con la jerarquía</td>
+            <td>¿El rol, autonomía y alcance son consistentes con las funciones esperadas para la jerarquía?</td>
+          </tr>
+          <tr>
+            <td>Desarrollo de la actividad</td>
+            <td>¿Muestra ejecución regular, oportunidad, completitud y pertinencia con el área?</td>
+          </tr>
+          <tr>
+            <td>Aporte verificable</td>
+            <td>¿Existen resultados o contribuciones que justifiquen un nivel superior al esperado?</td>
+          </tr>
         </table>
       </div>
     </details>
@@ -503,7 +1212,7 @@ const AREAS = [
   ], guia:null}
 ];
 
-const CIRCUNSTANCIAS_DECLARADAS = ["Inicio de carrera tras el grado"]; // ejemplo; [] = no declaró
+const CIRCUNSTANCIAS_DECLARADAS = ["Inicio de carrera tras el grado"];
 
 const RUBRICA = [
  {n:0, cat:"Insuficiente", d:"No permite reconocer el cumplimiento mínimo de lo comprometido. Actividades centrales no realizadas, sin respaldo verificable, o incumplimiento crítico."},
@@ -536,7 +1245,7 @@ function tick(){
   const rel = document.getElementById("reloj");
   const s = Math.floor((Date.now()-(inicioP2||Date.now()))/1000);
   const mm = String(Math.floor(s/60)).padStart(2,"0"), ss = String(s%60).padStart(2,"0");
-  if(inicioP2){ rel.textContent = "tiempo en pantalla: "+mm+":"+ss; document.getElementById("cron-total").textContent = mm+":"+ss; }
+  if(inicioP2){ rel.textContent = "tiempo: "+mm+":"+ss; document.getElementById("cron-total").textContent = mm+":"+ss; }
 }
 
 /* ---- paso 0: identificación + conflicto de interés ---- */
@@ -669,7 +1378,7 @@ function abrirModal(i){
       esc2.querySelectorAll(".nivel").forEach(x=> x.classList.toggle("sel", +x.dataset.n===n));
       document.getElementById("modal-desc").textContent = RUBRICA[n].cat + " — " + RUBRICA[n].d;
       document.getElementById("modal-oblig-fund").textContent = [0,1,4].includes(n) ? "obligatorio · fundamentación reforzada (5.6)" : "obligatorio";
-      modalIdx = i; // conserva referencia
+      modalIdx = i;
       esc2.dataset.sel = n;
     };
   });
@@ -713,7 +1422,7 @@ function renderIncidentes(){
   ul.innerHTML = incidentes.length ? "" : '<div class="inc-vacio">Sin incidentes registrados.</div>';
   incidentes.forEach(inc=>{
     const li = document.createElement("li");
-    li.innerHTML = `<span class="tag">${esc(inc.tipo)}</span><span>${esc(inc.texto)}</span><span style="margin-left:auto;color:var(--tinta-3)">${inc.hora}</span>`;
+    li.innerHTML = `<span class="tag">${esc(inc.tipo)}</span><span>${esc(inc.texto)}</span><span style="margin-left:auto;color:var(--neutral-light)">${inc.hora}</span>`;
     ul.appendChild(li);
   });
 }
