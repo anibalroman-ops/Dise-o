@@ -1,0 +1,1259 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de Deliberación — Comisión</title>
+<style>
+  :root{
+    --primary:#4F46E5;
+    --primary-dark:#4338CA;
+    --primary-light:#F0F4FF;
+    --secondary:#3B82F6;
+    --success:#10B981;
+    --warning:#F59E0B;
+    --error:#EF4444;
+    --error-light:#FEE2E2;
+    --neutral:#6B7280;
+    --neutral-light:#9CA3AF;
+    --gray-50:#F9FAFB;
+    --gray-100:#F3F4F6;
+    --gray-200:#E5E7EB;
+    --gray-300:#D1D5DB;
+    --gray-400:#9CA3AF;
+    --gray-600:#4B5563;
+    --gray-700:#374151;
+    --gray-900:#111827;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:#F3F4F6;
+    color:#1F2937;
+    font-family:"Segoe UI","Inter",-apple-system,system-ui,Roboto,Arial,sans-serif;
+    font-size:14px;
+    line-height:1.6;
+  }
+
+  /* ========== Header ========== */
+  .header{
+    position:sticky;
+    top:0;
+    z-index:40;
+    background:#fff;
+    border-bottom:1px solid var(--gray-200);
+    box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    padding:14px 32px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:24px;
+  }
+  .header-logo{font-size:18px;font-weight:700;color:var(--primary)}
+
+  /* ========== Contenedor ========== */
+  .contenedor{
+    max-width:1400px;
+    margin:0 auto;
+    padding:32px;
+  }
+
+  /* ========== Carga de Datos ========== */
+  .seccion-carga{
+    background:#fff;
+    border-radius:10px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    padding:28px 32px;
+    margin-bottom:32px;
+  }
+  .seccion-carga h2{
+    font-size:18px;
+    font-weight:700;
+    margin:0 0 16px;
+    color:var(--primary);
+  }
+  .carga-flex{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap}
+  .campo-archivo{flex:1;min-width:250px}
+  .campo-archivo label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--gray-600);
+    margin-bottom:6px;
+  }
+  .campo-archivo input{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--gray-300);
+    border-radius:6px;
+    font:inherit;
+    font-size:13px;
+  }
+  .btn-cargar{
+    padding:10px 20px;
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .btn-cargar:hover{background:var(--primary-dark)}
+  .btn-cargar:disabled{background:var(--gray-300);cursor:not-allowed}
+
+  .instruccion{
+    font-size:12px;
+    color:var(--neutral-light);
+    margin-top:8px;
+  }
+
+  /* ========== Estado de Carga ========== */
+  .estado-carga{
+    margin-top:16px;
+    padding:12px 16px;
+    border-radius:6px;
+    font-size:13px;
+  }
+  .estado-carga.exito{background:#DCFCE7;color:#15803D;border:1px solid #86EFAC}
+  .estado-carga.error{background:#FEE2E2;color:#DC2626;border:1px solid #FECACA}
+  .estado-carga.info{background:var(--primary-light);color:var(--primary);border:1px solid var(--primary)}
+
+  .oculto{display:none!important}
+
+  /* ========== Panel de Deliberación ========== */
+  .panel-deliberacion{
+    background:#fff;
+    border-radius:10px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    padding:28px 32px;
+  }
+
+  .info-academico{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:16px;
+    padding:20px;
+    background:var(--gray-50);
+    border-radius:8px;
+    margin-bottom:32px;
+    font-size:13px;
+  }
+  .info-academico .campo{
+    display:flex;
+    justify-content:space-between;
+  }
+  .info-academico .label{
+    font-weight:700;
+    color:var(--gray-600);
+  }
+  .info-academico .valor{
+    font-weight:600;
+    color:var(--primary);
+  }
+
+  /* ========== Resumen Comisión ========== */
+  .resumen-comision{
+    margin-bottom:32px;
+    border:1px solid var(--gray-200);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .resumen-titulo{
+    background:var(--gray-900);
+    color:#fff;
+    padding:14px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    font-size:14px;
+    font-weight:700;
+  }
+  .resumen-progreso{
+    font-size:11px;
+    font-weight:600;
+    background:rgba(255,255,255,0.15);
+    padding:4px 10px;
+    border-radius:12px;
+    white-space:nowrap;
+  }
+  .resumen-tabla-wrap{
+    overflow-x:auto;
+  }
+  .resumen-tabla{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+  }
+  .resumen-tabla th{
+    background:var(--gray-50);
+    text-align:left;
+    padding:10px 14px;
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--gray-600);
+    border-bottom:2px solid var(--gray-200);
+    white-space:nowrap;
+  }
+  .resumen-tabla th:not(:first-child),
+  .resumen-tabla td:not(:first-child){
+    text-align:center;
+  }
+  .resumen-tabla td{
+    padding:9px 14px;
+    border-bottom:1px solid var(--gray-200);
+  }
+  .resumen-tabla tbody tr{
+    cursor:pointer;
+    transition:background 0.15s;
+  }
+  .resumen-tabla tbody tr:hover{background:var(--primary-light)}
+  .resumen-tabla tbody tr:last-child td{border-bottom:none}
+  .nota-excluidas{
+    font-size:12px;
+    color:var(--gray-700);
+    background:#FFFBF0;
+    border-top:1px solid var(--gray-200);
+    padding:12px 16px;
+    line-height:1.6;
+  }
+  .nota-excluidas b{color:var(--warning)}
+  .resumen-area-nombre{
+    font-weight:600;
+    color:var(--gray-900);
+    white-space:nowrap;
+  }
+  .resumen-nivel-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:24px;
+    height:24px;
+    padding:0 6px;
+    border-radius:6px;
+    font-weight:700;
+    font-size:12px;
+    background:var(--gray-100);
+    color:var(--gray-700);
+  }
+  .resumen-nivel-badge[data-n="0"]{background:#FEE2E2;color:#DC2626}
+  .resumen-nivel-badge[data-n="1"]{background:#FEF3C7;color:#B45309}
+  .resumen-nivel-badge[data-n="2"]{background:var(--gray-100);color:var(--gray-700)}
+  .resumen-nivel-badge[data-n="3"]{background:#DBEAFE;color:#1D4ED8}
+  .resumen-nivel-badge[data-n="4"]{background:#DCFCE7;color:#15803D}
+  .resumen-divergencia-badge{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:12px;
+    font-size:10px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+  .resumen-divergencia-badge.total{background:#DCFCE7;color:#15803D}
+  .resumen-divergencia-badge.moderado{background:#FEF3C7;color:#B45309}
+  .resumen-divergencia-badge.alto{background:#FEE2E2;color:#DC2626}
+  .resumen-acordado{
+    font-weight:700;
+    font-size:12px;
+    color:var(--neutral-light);
+    white-space:nowrap;
+  }
+  .resumen-acordado.decidido{color:var(--primary)}
+
+  /* ========== Áreas de Deliberación ========== */
+  .area-deliberacion{
+    border:1px solid var(--gray-200);
+    border-radius:8px;
+    margin-bottom:24px;
+    overflow:hidden;
+  }
+  .area-encabezado{
+    background:var(--primary-light);
+    padding:16px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+  }
+  .area-encabezado:hover{background:#E0E7FF}
+  .area-nombre{
+    font-size:15px;
+    font-weight:700;
+    color:var(--primary);
+  }
+  .area-toggle{
+    font-size:12px;
+    color:var(--neutral-light);
+  }
+
+  .area-contenido{
+    padding:20px;
+    background:#fff;
+    display:none;
+  }
+  .area-contenido.visible{display:block}
+
+  /* ========== Evaluaciones Lado a Lado ========== */
+  .evaluaciones-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+    margin-bottom:24px;
+  }
+  .eval-card{
+    border:1px solid var(--gray-200);
+    border-radius:6px;
+    padding:16px;
+    background:var(--gray-50);
+  }
+  .eval-card-titulo{
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--gray-600);
+    margin-bottom:8px;
+  }
+  .eval-nivel{
+    font-size:28px;
+    font-weight:700;
+    color:var(--primary);
+    margin-bottom:4px;
+  }
+  .eval-categoria{
+    font-size:12px;
+    font-weight:600;
+    color:var(--primary);
+    margin-bottom:12px;
+  }
+  .eval-fund{
+    font-size:12px;
+    color:var(--gray-700);
+    line-height:1.5;
+    border-left:3px solid var(--gray-300);
+    padding-left:10px;
+  }
+
+  /* ========== Divergencia ========== */
+  .divergencia{
+    background:#FEF3C7;
+    border-left:4px solid var(--warning);
+    padding:12px 16px;
+    border-radius:4px;
+    font-size:12px;
+    margin-bottom:20px;
+    color:var(--gray-700);
+  }
+  .divergencia b{color:var(--warning)}
+  .divergencia.consenso{background:#DCFCE7;border-color:var(--success)}
+  .divergencia.consenso b{color:var(--success)}
+
+  /* ========== Panel de Decisión ========== */
+  .panel-decision{
+    background:var(--gray-50);
+    border-radius:6px;
+    padding:16px;
+    border:1px solid var(--gray-200);
+  }
+  .decision-titulo{
+    font-size:13px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--gray-600);
+    margin-bottom:12px;
+  }
+
+  .escala-decision{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .nivel-boton{
+    padding:12px 8px;
+    border:2px solid var(--gray-300);
+    background:#fff;
+    border-radius:6px;
+    cursor:pointer;
+    text-align:center;
+    font-weight:600;
+    transition:all 0.2s;
+  }
+  .nivel-boton:hover{border-color:var(--primary)}
+  .nivel-boton[data-n="0"]{color:#EF4444}
+  .nivel-boton[data-n="1"]{color:#F59E0B}
+  .nivel-boton[data-n="2"]{color:#6B7280}
+  .nivel-boton[data-n="3"]{color:#3B82F6}
+  .nivel-boton[data-n="4"]{color:#10B981}
+  .nivel-boton.sel{
+    color:#fff;
+    box-shadow:0 0 0 3px rgba(0,0,0,0.08) inset;
+  }
+  .nivel-boton[data-n="0"].sel{background:#EF4444;border-color:#EF4444}
+  .nivel-boton[data-n="1"].sel{background:#F59E0B;border-color:#F59E0B}
+  .nivel-boton[data-n="2"].sel{background:#6B7280;border-color:#6B7280}
+  .nivel-boton[data-n="3"].sel{background:#3B82F6;border-color:#3B82F6}
+  .nivel-boton[data-n="4"].sel{background:#10B981;border-color:#10B981}
+
+  .notas-deliberacion{
+    margin-bottom:16px;
+  }
+  .notas-deliberacion label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--gray-600);
+    margin-bottom:6px;
+  }
+  .notas-deliberacion textarea{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--gray-300);
+    border-radius:6px;
+    font:inherit;
+    font-size:12px;
+    min-height:60px;
+    resize:vertical;
+  }
+
+  /* ========== Resultado Preliminar ========== */
+  .resultado-area{
+    background:var(--primary-light);
+    padding:12px 16px;
+    border-radius:6px;
+    margin-top:12px;
+    font-size:12px;
+    border-left:4px solid var(--primary);
+  }
+  .resultado-area b{color:var(--primary)}
+
+  /* ========== CF Preview ========== */
+  .cf-preview{
+    background:var(--primary-light);
+    border:2px solid var(--primary);
+    border-radius:8px;
+    padding:20px;
+    margin:32px 0;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+    align-items:center;
+  }
+  .cf-numero{
+    font-size:48px;
+    font-weight:700;
+    color:var(--primary);
+    line-height:1;
+  }
+  .cf-cat{font-size:13px;font-weight:700;color:var(--primary-dark);margin-top:2px}
+  .cf-texto{
+    font-size:13px;
+    color:var(--gray-700);
+    line-height:1.6;
+  }
+  .cf-texto b{color:var(--primary)}
+
+  /* ========== Botones Finales ========== */
+  .botones-finales{
+    display:flex;
+    gap:12px;
+    margin-top:32px;
+    justify-content:flex-end;
+  }
+  .btn-primario{
+    padding:12px 24px;
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    font-weight:600;
+    cursor:pointer;
+    font-size:14px;
+  }
+  .btn-primario:hover{background:var(--primary-dark)}
+  .btn-primario:disabled{background:var(--gray-300);cursor:not-allowed}
+  .btn-secundario{
+    padding:12px 20px;
+    background:#fff;
+    color:var(--gray-700);
+    border:1px solid var(--gray-300);
+    border-radius:6px;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    margin-right:auto;
+  }
+  .btn-secundario:hover{background:var(--gray-50)}
+  .btn-secundario:disabled{color:var(--gray-300);cursor:not-allowed;background:#fff}
+
+  /* ========== Barra de pasos ========== */
+  .barra-pasos{
+    display:flex;align-items:center;gap:0;
+    max-width:700px;margin:0 auto 32px;
+  }
+  .paso-item{
+    flex:1;display:flex;align-items:center;gap:10px;
+    font-size:12px;font-weight:700;color:var(--neutral-light);
+  }
+  .paso-item .bola{
+    width:26px;height:26px;border-radius:50%;
+    background:var(--gray-200);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;flex-shrink:0;
+  }
+  .paso-item.activo{color:var(--primary-dark)}
+  .paso-item.activo .bola{background:var(--primary)}
+  .paso-item.hecho .bola{background:var(--success)}
+  .paso-linea{flex:0 0 60px;height:2px;background:var(--gray-200);margin:0 4px}
+  .paso-linea.hecho{background:var(--success)}
+
+  /* ========== Avisos paso 2 ========== */
+  .aviso-bloqueo{
+    background:#FEF3C7;border:1px solid #FDE68A;color:#92400E;
+    border-radius:8px;padding:12px 16px;font-size:12.5px;margin-bottom:20px;
+  }
+  .aviso-final{
+    background:#F0FDF4;border:1px solid #BBF7D0;color:#166534;
+    border-radius:8px;padding:14px 16px;font-size:13px;margin-bottom:20px;font-weight:600;
+  }
+
+  /* ========== Documento imprimible (informe final) ========== */
+  #hoja-informe{
+    background:#fff;max-width:760px;margin:0 auto;padding:40px 48px;
+    color:#2b2b2b;font-family:Georgia,"Times New Roman",serif;
+    border:1px solid var(--gray-200);border-radius:8px;
+  }
+  #hoja-informe .doc-header{text-align:center;border-bottom:2px solid #2b2b2b;padding-bottom:14px;margin-bottom:22px}
+  #hoja-informe .doc-inst{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#555}
+  #hoja-informe .doc-titulo{font-size:19px;font-weight:700;margin-top:6px}
+  #hoja-informe .doc-sub{font-size:12px;color:#666;margin-top:4px}
+  .doc-datos{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:13px;margin-bottom:22px}
+  .doc-datos div span{color:#777;font-size:11px;text-transform:uppercase;letter-spacing:.03em;display:block}
+  table.doc-tabla{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:18px}
+  table.doc-tabla th{
+    text-align:left;padding:7px 8px;background:#2b2b2b;color:#fff;font-size:11px;
+    text-transform:uppercase;letter-spacing:.03em;font-weight:600;
+  }
+  table.doc-tabla td{padding:7px 8px;border-bottom:1px solid #ddd;vertical-align:top}
+  table.doc-tabla td.num{text-align:center;white-space:nowrap}
+  table.doc-tabla tr.excluida td{color:#999;font-style:italic}
+  .doc-cf{
+    display:flex;align-items:center;gap:20px;border:1.5px solid #2b2b2b;
+    border-radius:6px;padding:14px 18px;margin:20px 0;
+  }
+  .doc-cf .valor{font-size:30px;font-weight:800}
+  .doc-cf .cat{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+  .doc-cf .ref{font-size:11px;color:#666;margin-left:auto;max-width:230px;text-align:right}
+
+  .doc-retro{margin-bottom:22px}
+  .doc-retro > .titulo{
+    font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#777;
+    border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:12px;
+  }
+  .retro-area{margin-bottom:18px;page-break-inside:avoid}
+  .retro-area .area-nombre{
+    font-size:13px;font-weight:700;margin-bottom:8px;
+    background:#f2f2f2;padding:5px 9px;border-radius:4px;
+  }
+  .retro-area .area-nombre .n{font-weight:400;color:#666;font-size:11.5px}
+  .retro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .retro-card{border:1px solid #ddd;border-radius:5px;padding:8px 10px;background:#fcfcfc}
+  .retro-card .autor{
+    font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+    color:#666;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid #e2e2e2;
+  }
+  .retro-card .retro-sub{
+    font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+    color:#999;margin-top:7px;margin-bottom:2px;
+  }
+  .retro-card .texto{font-size:11.5px;color:#333;line-height:1.5}
+  .retro-vacia{font-size:11.5px;color:#999;font-style:italic;padding:2px 9px}
+
+  .doc-firmas{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px}
+  .doc-firma{font-size:11.5px;text-align:center}
+  .doc-firma .linea{border-top:1px solid #2b2b2b;margin-top:34px;padding-top:6px}
+  .doc-firma .nombre{font-weight:700}
+  .doc-firma .rol{color:#777;font-size:10.5px}
+  .doc-firma .estado{margin-top:4px;font-size:10.5px}
+  .doc-firma .estado.ok{color:#15803D;font-weight:700}
+  .doc-firma .estado.pend{color:#B45309}
+
+  .doc-footer{
+    margin-top:28px;padding-top:10px;border-top:1px solid #ccc;
+    display:flex;justify-content:space-between;font-size:10px;color:#888;
+  }
+
+  /* ========== Control de firma (fuera del documento) ========== */
+  .panel-firma-control{margin-top:24px}
+  .panel-firma-control h3{font-size:14px;font-weight:700;margin:0 0 14px;color:var(--gray-900)}
+  .firma-fila{
+    display:flex;align-items:center;gap:14px;
+    padding:12px 14px;border:1px solid var(--gray-200);border-radius:8px;margin-bottom:10px;
+    background:#fff;
+  }
+  .firma-fila .info{flex:1}
+  .firma-fila .info .n{font-weight:700;font-size:13px}
+  .firma-fila .info .e{font-size:11px;color:var(--neutral-light)}
+  .chk-firmar{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;cursor:pointer;user-select:none}
+  .chk-firmar input{width:17px;height:17px;cursor:pointer}
+  .firma-fila.firmada{border-color:var(--success);background:#F0FDF4}
+
+  /* ========== Impresión ========== */
+  @media print{
+    .header,.barra-pasos,.seccion-carga,#paso1,.no-imprimir{display:none !important}
+    body{background:#fff}
+    .contenedor{max-width:none;padding:0;margin:0}
+    #hoja-informe{border:none;padding:0;max-width:none}
+  }
+
+  /* ========== Responsive ========== */
+  @media (max-width:1200px){
+    .evaluaciones-grid{grid-template-columns:1fr}
+    .doc-firmas,.retro-grid{grid-template-columns:1fr}
+    .cf-preview{grid-template-columns:1fr}
+  }
+  @media (max-width:768px){
+    .header{flex-direction:column;align-items:flex-start;gap:12px}
+    .contenedor{padding:16px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== Header ========== -->
+<div class="header">
+  <div class="header-logo">📋 Panel de Deliberación</div>
+</div>
+
+<!-- ========== Contenedor ========== -->
+<div class="contenedor">
+
+  <!-- Carga de Datos -->
+  <div class="seccion-carga">
+    <h2>Cargar datos de deliberación</h2>
+    <div class="carga-flex">
+      <div class="campo-archivo" style="flex:1;min-width:280px">
+        <label for="archivo-json">Archivo JSON (exportado de Google Sheets)</label>
+        <input id="archivo-json" type="file" accept=".json">
+        <div class="instruccion">Descargue el archivo JSON desde Google Sheets y seleccione aquí.</div>
+      </div>
+      <button class="btn-cargar" id="btn-cargar-datos">Cargar datos</button>
+    </div>
+    <div id="msg-carga"></div>
+  </div>
+
+  <!-- Panel de Deliberación (oculto hasta cargar datos) -->
+  <div class="panel-deliberacion oculto" id="panel-deliberacion">
+
+    <!-- Barra de pasos -->
+    <div class="barra-pasos">
+      <div class="paso-item activo" id="paso-ind-1"><div class="bola">1</div><span>Deliberación</span></div>
+      <div class="paso-linea" id="linea-pasos"></div>
+      <div class="paso-item" id="paso-ind-2"><div class="bola">2</div><span>Informe final y firma</span></div>
+    </div>
+
+    <!-- ============ PASO 1: Deliberación ============ -->
+    <div id="paso1">
+
+      <h1 style="font-size:24px;margin:0 0 8px;color:#1F2937">Deliberación de la Comisión</h1>
+      <p style="margin:0 0 24px;color:var(--neutral);font-size:14px">
+        Revisen lado a lado las 3 evaluaciones. Por cada área, discutan y decidan el nivel final.
+      </p>
+
+      <!-- Información del Académico -->
+      <div class="info-academico">
+        <div class="campo"><span class="label">Académico:</span><span class="valor" id="info-nombre">—</span></div>
+        <div class="campo"><span class="label">Unidad:</span><span class="valor" id="info-unidad">—</span></div>
+        <div class="campo"><span class="label">Jerarquía:</span><span class="valor" id="info-jerarquia">—</span></div>
+        <div class="campo"><span class="label">Jornada:</span><span class="valor" id="info-jornada">—</span></div>
+      </div>
+
+      <!-- Cuadro Resumen por Área -->
+      <div class="resumen-comision">
+        <div class="resumen-titulo">
+          <span>Resumen de evaluaciones de la comisión</span>
+          <span class="resumen-progreso" id="resumen-progreso">0/7 áreas decididas</span>
+        </div>
+        <div class="resumen-tabla-wrap">
+          <table class="resumen-tabla">
+            <thead>
+              <tr>
+                <th>Área</th>
+                <th id="resumen-th-1">Comisionado 1</th>
+                <th id="resumen-th-2">Comisionado 2</th>
+                <th id="resumen-th-3">Comisionado 3</th>
+                <th>Divergencia</th>
+                <th>Acordado</th>
+              </tr>
+            </thead>
+            <tbody id="resumen-tbody"></tbody>
+          </table>
+        </div>
+        <div class="nota-excluidas oculto" id="nota-excluidas"></div>
+      </div>
+
+      <!-- Áreas de Deliberación (se genera dinámicamente) -->
+      <div id="areas-contenedor"></div>
+
+      <!-- CF Preview -->
+      <div class="cf-preview">
+        <div>
+          <div class="cf-numero" id="cf-final">—</div>
+          <div class="cf-cat" id="cf-cat-preview"></div>
+          <div style="font-size:11px;color:var(--neutral-light)" id="cf-estado"></div>
+        </div>
+        <div class="cf-texto">
+          Suma ponderada de los niveles acordados por la comisión, usando las horas comprometidas (Art. 35).
+          <br><b>Esta es la calificación final.</b>
+        </div>
+      </div>
+
+      <div class="botones-finales">
+        <button class="btn-primario" id="btn-ir-informe">Continuar al informe final →</button>
+      </div>
+
+    </div>
+
+    <!-- ============ PASO 2: Informe final y firma ============ -->
+    <div class="oculto" id="paso2">
+
+      <div class="aviso-bloqueo no-imprimir" id="aviso-bloqueo">
+        Este documento se genera automáticamente a partir de los niveles acordados en la deliberación. Revíselo y, si está correcto, cada comisionado debe firmar abajo para poder finalizar la evaluación.
+      </div>
+      <div class="aviso-final oculto" id="aviso-final">
+        ✓ Evaluación finalizada y firmada por la comisión completa. El informe ya no puede modificarse.
+      </div>
+
+      <!-- Documento imprimible -->
+      <div id="hoja-informe">
+        <div class="doc-header">
+          <div class="doc-inst">Universidad de Santiago de Chile — Facultad de Ingeniería</div>
+          <div class="doc-titulo">Informe Final de Evaluación de Desempeño Académico</div>
+          <div class="doc-sub" id="doc-periodo">Convenio de Desempeño Académico</div>
+        </div>
+
+        <div class="doc-datos">
+          <div><span>Académico(a)</span><span id="doc-nombre">—</span></div>
+          <div><span>Unidad</span><span id="doc-unidad">—</span></div>
+          <div><span>Jerarquía académica</span><span id="doc-jerarquia">—</span></div>
+          <div><span>Jornada contractual</span><span id="doc-jornada">—</span></div>
+        </div>
+
+        <table class="doc-tabla">
+          <thead>
+            <tr>
+              <th>Área</th>
+              <th class="num">Ponderación</th>
+              <th class="num">Nivel acordado</th>
+              <th>Categoría</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-doc-areas"></tbody>
+        </table>
+
+        <div class="doc-cf">
+          <div class="valor" id="doc-cf-valor">—</div>
+          <div class="cat" id="doc-cf-cat"></div>
+          <div class="ref">Calificación Final según escala del Art. 35 del Manual de Evaluación de Desempeño Académico.</div>
+        </div>
+
+        <div class="doc-retro" id="doc-retro"></div>
+
+        <div class="doc-firmas" id="doc-firmas"></div>
+
+        <div class="doc-footer">
+          <span>Documento generado por el Panel de Deliberación</span>
+          <span id="doc-fecha"></span>
+        </div>
+      </div>
+
+      <!-- Control de firma (no se imprime) -->
+      <div class="panel-firma-control no-imprimir" id="panel-firma-control">
+        <h3>Firma de la comisión — constancia de deliberación (Art. 52, Título IX)</h3>
+        <div id="firmas-control-cont"></div>
+      </div>
+
+      <div class="botones-finales no-imprimir">
+        <button class="btn-secundario" id="btn-volver">← Volver a deliberación</button>
+        <button class="btn-primario" id="btn-finalizar" disabled>Finalizar evaluación y exportar PDF</button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+/* ========================================================================
+   Panel de Deliberación — Sistema independiente HTML
+   ======================================================================== */
+
+// Lista completa de referencia. Las áreas realmente deliberadas se calculan
+// al cargar los datos (calcularAreasAplicables), porque un área que el
+// académico no ejecutó en el período (0 horas realizadas) no se evalúa ni
+// se pondera: no aparece y no penaliza la calificación final.
+const AREAS_REFERENCIA = [
+  "Docencia", "Investigación y desarrollo", "Extensión - VIME",
+  "Extensión - Educación continua", "Asistencia técnica",
+  "Administración académica", "Perfeccionamiento"
+];
+let AREAS = [];
+let areasExcluidas = [];
+
+const RUBRICA = [
+  {n:0, cat:"Insuficiente", desc:"No permite reconocer el cumplimiento mínimo de lo comprometido."},
+  {n:1, cat:"Condicional", desc:"Cumplimiento parcial, irregular o débil."},
+  {n:2, cat:"Aceptable", desc:"Cumplimiento mínimo reconocible."},
+  {n:3, cat:"Bueno", desc:"Cumple plenamente lo esperado para la jerarquía."},
+  {n:4, cat:"Sobresaliente", desc:"Supera de manera verificable lo esperado."}
+];
+
+// Mismos rangos de CF_RANGOS que sistema_evaluacion_maqueta_v2.html (Art. 35).
+const CF_RANGOS = [
+  {min:3.70, max:4.00, cat:"Sobresaliente"},
+  {min:2.80, max:3.69, cat:"Bueno"},
+  {min:2.00, max:2.79, cat:"Aceptable"},
+  {min:1.50, max:1.99, cat:"Condicional"},
+  {min:0.00, max:1.49, cat:"Insuficiente"}
+];
+function categoriaCF(v){ return CF_RANGOS.find(r=> v>=r.min && v<=r.max) || null; }
+
+let datosCargados = null;
+let deliberaciones = {}; // {area: {nivel, notas}}
+
+/* ---- Carga de Datos ---- */
+document.getElementById("btn-cargar-datos").onclick = ()=>{
+  const file = document.getElementById("archivo-json").files[0];
+  if(!file){
+    mostrarMensaje("Seleccione un archivo JSON", "error");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      datosCargados = JSON.parse(e.target.result);
+      validarDatos(datosCargados);
+      calcularAreasAplicables(datosCargados);
+      renderizarPanelDeliberacion();
+      mostrarMensaje("✓ Datos cargados correctamente", "exito");
+      document.getElementById("panel-deliberacion").classList.remove("oculto");
+    }catch(err){
+      mostrarMensaje("Error al cargar JSON: " + err.message, "error");
+    }
+  };
+  reader.readAsText(file);
+};
+
+function validarDatos(datos){
+  if(!datos.evaluaciones || datos.evaluaciones.length !== 3){
+    throw new Error("Debe haber exactamente 3 evaluaciones");
+  }
+  if(!datos.academico){
+    throw new Error("Faltan datos del académico");
+  }
+}
+
+function nombresArea(evaluacion){
+  const lista = evaluacion.evaluaciones?.areas || evaluacion.areas || [];
+  return lista.map(a=> a.nombre);
+}
+
+function datosArea(evaluacion, nombreArea){
+  const lista = evaluacion.evaluaciones?.areas || evaluacion.areas || [];
+  return lista.find(a=> a.nombre === nombreArea);
+}
+
+// Un área solo entra en la deliberación si los 3 comisionados la evaluaron.
+// Si el académico no ejecutó una actividad comprometida (0 horas realizadas),
+// esa área simplemente no llega evaluada desde la maqueta: no se delibera y
+// no pondera en la calificación final — no se penaliza.
+function calcularAreasAplicables(datos){
+  const listas = datos.evaluaciones.map(nombresArea);
+  const [primera, ...resto] = listas;
+  AREAS = AREAS_REFERENCIA.filter(nombre=>
+    primera.includes(nombre) && resto.every(lista=> lista.includes(nombre))
+  );
+  areasExcluidas = AREAS_REFERENCIA.filter(nombre=> !AREAS.includes(nombre));
+
+  deliberaciones = {};
+  AREAS.forEach(a=> deliberaciones[a] = {nivel: null, notas: ""});
+}
+
+function mostrarMensaje(msg, tipo){
+  const div = document.getElementById("msg-carga");
+  div.innerHTML = `<div class="estado-carga ${tipo}">${msg}</div>`;
+}
+
+/* ---- Renderizar Panel de Deliberación ---- */
+function renderizarPanelDeliberacion(){
+  // Información académico
+  document.getElementById("info-nombre").textContent = datosCargados.academico.nombre || "—";
+  document.getElementById("info-unidad").textContent = datosCargados.academico.unidad || "—";
+  document.getElementById("info-jerarquia").textContent = datosCargados.academico.jerarquia || "—";
+  document.getElementById("info-jornada").textContent = datosCargados.academico.jornada || "—";
+
+  // Áreas de deliberación
+  const contenedor = document.getElementById("areas-contenedor");
+  contenedor.innerHTML = "";
+
+  AREAS.forEach((area, idx)=>{
+    const evals = datosCargados.evaluaciones.map(e=> {
+      const d = datosArea(e, area);
+      return {
+        comisionado: e.comisionado.nombre,
+        nivel: d?.nivel,
+        fund: d?.fundamento
+      };
+    });
+
+    // Calcular divergencia
+    const niveles = evals.map(e=> e.nivel);
+    const minN = Math.min(...niveles);
+    const maxN = Math.max(...niveles);
+    const divergencia = maxN - minN;
+
+    const html = `
+      <div class="area-deliberacion" data-area="${area}" id="area-block-${idx}">
+        <div class="area-encabezado" onclick="this.nextElementSibling.classList.toggle('visible')">
+          <div class="area-nombre">${area}</div>
+          <div class="area-toggle">▼</div>
+        </div>
+        <div class="area-contenido visible">
+
+          <!-- Evaluaciones lado a lado -->
+          <div class="evaluaciones-grid">
+            ${evals.map((e,i)=> `
+              <div class="eval-card">
+                <div class="eval-card-titulo">Comisionado ${i+1}</div>
+                <div class="eval-nivel">${e.nivel}</div>
+                <div class="eval-categoria">${RUBRICA[e.nivel].cat}</div>
+                <div class="eval-fund">"${e.fund}"</div>
+              </div>
+            `).join("")}
+          </div>
+
+          <!-- Divergencia -->
+          <div class="divergencia ${divergencia <= 1 ? 'consenso' : ''}">
+            <b>${divergencia === 0 ? 'Consenso total' : divergencia === 1 ? 'Consenso moderado' : 'Discrepancia significativa'}</b>
+            ${divergencia > 0 ? ` (rango: ${minN}-${maxN})` : ''}
+          </div>
+
+          <!-- Panel de Decisión -->
+          <div class="panel-decision">
+            <div class="decision-titulo">Decisión de la comisión</div>
+
+            <div class="escala-decision" data-area="${area}">
+              ${RUBRICA.map(r=> `
+                <button class="nivel-boton" data-n="${r.n}" data-area="${area}" onclick="seleccionarNivel('${area}', ${r.n})">
+                  <div>${r.n}</div>
+                  <div style="font-size:9px;text-transform:uppercase">${r.cat}</div>
+                </button>
+              `).join("")}
+            </div>
+
+            <div class="notas-deliberacion">
+              <label for="notas-${idx}">Notas de la comisión</label>
+              <textarea id="notas-${idx}" placeholder="Argumentos principales de la decisión..." onchange="guardarNotas('${area}', this.value)"></textarea>
+            </div>
+
+            <div class="resultado-area">
+              <b>Nivel acordado:</b> <span id="resultado-${area}">No decidido</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    contenedor.innerHTML += html;
+  });
+
+  renderizarResumen();
+}
+
+/* ---- Cuadro Resumen por Área ---- */
+function renderizarResumen(){
+  // Encabezados con nombre de cada comisionado
+  datosCargados.evaluaciones.forEach((e, i)=>{
+    const th = document.getElementById(`resumen-th-${i+1}`);
+    if(th) th.textContent = e.comisionado.nombre;
+  });
+
+  const tbody = document.getElementById("resumen-tbody");
+  let filas = "";
+  let decididas = 0;
+
+  AREAS.forEach((area, idx)=>{
+    const niveles = datosCargados.evaluaciones.map(e=> datosArea(e, area)?.nivel);
+    const minN = Math.min(...niveles);
+    const maxN = Math.max(...niveles);
+    const divergencia = maxN - minN;
+    const estadoDiv = divergencia === 0 ? "total" : divergencia === 1 ? "moderado" : "alto";
+    const textoDiv = divergencia === 0 ? "Consenso total" : divergencia === 1 ? "Consenso moderado" : "Discrepancia";
+
+    const acordado = deliberaciones[area].nivel;
+    if(acordado !== null) decididas++;
+
+    filas += `
+      <tr onclick="irAArea(${idx})">
+        <td class="resumen-area-nombre">${area}</td>
+        ${niveles.map(n=> `<td><span class="resumen-nivel-badge" data-n="${n}">${n}</span></td>`).join("")}
+        <td><span class="resumen-divergencia-badge ${estadoDiv}">${textoDiv}</span></td>
+        <td><span class="resumen-acordado ${acordado !== null ? 'decidido' : ''}">${acordado !== null ? acordado + ' — ' + RUBRICA[acordado].cat : 'Pendiente'}</span></td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = filas;
+  document.getElementById("resumen-progreso").textContent = `${decididas}/${AREAS.length} áreas decididas`;
+
+  const notaExcl = document.getElementById("nota-excluidas");
+  if(notaExcl){
+    if(areasExcluidas.length){
+      notaExcl.innerHTML = `<b>Sin actividad realizada en el período (no se evaluaron, no afectan la calificación):</b> ${areasExcluidas.join(", ")}.`;
+      notaExcl.classList.remove("oculto");
+    } else {
+      notaExcl.classList.add("oculto");
+    }
+  }
+}
+
+function irAArea(idx){
+  const bloque = document.getElementById(`area-block-${idx}`);
+  if(!bloque) return;
+  bloque.querySelector(".area-contenido").classList.add("visible");
+  bloque.scrollIntoView({behavior:"smooth", block:"start"});
+  bloque.style.boxShadow = "0 0 0 3px var(--primary)";
+  setTimeout(()=> bloque.style.boxShadow = "", 1200);
+}
+
+function seleccionarNivel(area, nivel){
+  deliberaciones[area].nivel = nivel;
+
+  // Actualizar UI
+  document.querySelectorAll(`button[data-area="${area}"]`).forEach(b=> {
+    b.classList.toggle("sel", +b.dataset.n === nivel);
+  });
+
+  document.getElementById(`resultado-${area}`).textContent = `${nivel} — ${RUBRICA[nivel].cat}`;
+  calcularCF();
+  renderizarResumen();
+}
+
+function guardarNotas(area, notas){
+  deliberaciones[area].notas = notas;
+}
+
+function calcularCF(){
+  const horasObj = datosCargados.academico.areas_horas || {};
+  const horas = AREAS.map(a=> horasObj[a] ?? 1);
+  const totalH = horas.reduce((a,b)=>a+b, 0);
+
+  let suma = 0, hechas = 0;
+  AREAS.forEach((a, i)=>{
+    if(deliberaciones[a].nivel !== null){
+      suma += deliberaciones[a].nivel * (horas[i] / totalH);
+      hechas++;
+    }
+  });
+
+  const cf = hechas ? suma.toFixed(2) : "—";
+  document.getElementById("cf-final").textContent = cf;
+  document.getElementById("cf-estado").textContent = hechas === AREAS.length ? "Cálculo completo" : `Cálculo parcial: ${hechas}/${AREAS.length} áreas`;
+
+  const cat = hechas === AREAS.length ? categoriaCF(parseFloat(cf)) : null;
+  document.getElementById("cf-cat-preview").textContent = cat ? cat.cat : "";
+}
+
+/* ========================================================================
+   PASO 2 — Informe final y firma
+   ======================================================================== */
+let firmado = {};
+
+document.getElementById("btn-ir-informe").onclick = ()=>{
+  const sinEvaluar = AREAS.filter(a=> deliberaciones[a].nivel === null);
+  if(sinEvaluar.length > 0){
+    alert(`Falta evaluar: ${sinEvaluar.join(", ")}`);
+    return;
+  }
+
+  renderInformeFinal();
+
+  document.getElementById("paso1").classList.add("oculto");
+  document.getElementById("paso2").classList.remove("oculto");
+  document.getElementById("paso-ind-1").classList.remove("activo");
+  document.getElementById("paso-ind-1").classList.add("hecho");
+  document.getElementById("paso-ind-1").querySelector(".bola").textContent = "✓";
+  document.getElementById("linea-pasos").classList.add("hecho");
+  document.getElementById("paso-ind-2").classList.add("activo");
+  window.scrollTo({top:0, behavior:"smooth"});
+};
+
+document.getElementById("btn-volver").onclick = ()=>{
+  document.getElementById("paso2").classList.add("oculto");
+  document.getElementById("paso1").classList.remove("oculto");
+  document.getElementById("paso-ind-2").classList.remove("activo");
+  document.getElementById("paso-ind-1").classList.add("activo");
+  document.getElementById("paso-ind-1").classList.remove("hecho");
+  document.getElementById("paso-ind-1").querySelector(".bola").textContent = "1";
+  document.getElementById("linea-pasos").classList.remove("hecho");
+  window.scrollTo({top:0, behavior:"smooth"});
+};
+
+function renderInformeFinal(){
+  const ac = datosCargados.academico;
+  document.getElementById("doc-nombre").textContent = ac.nombre || "—";
+  document.getElementById("doc-unidad").textContent = ac.unidad || "—";
+  document.getElementById("doc-jerarquia").textContent = ac.jerarquia || "—";
+  document.getElementById("doc-jornada").textContent = ac.jornada ? `${ac.jornada} horas semanales` : "—";
+  document.getElementById("doc-periodo").textContent = `Convenio de Desempeño Académico — Período ${ac.periodo || "—"}`;
+
+  const horasObj = ac.areas_horas || {};
+  const tbody = document.getElementById("tbody-doc-areas");
+  tbody.innerHTML = "";
+  AREAS.forEach(area=>{
+    const n = deliberaciones[area].nivel;
+    const cat = RUBRICA[n].cat;
+    const pond = horasObj[area] ?? "—";
+    tbody.innerHTML += `<tr><td>${area}</td><td class="num">${pond} h</td><td class="num">${n}</td><td>${cat}</td></tr>`;
+  });
+  areasExcluidas.forEach(area=>{
+    tbody.innerHTML += `<tr class="excluida"><td>${area}</td><td class="num">—</td><td class="num">—</td><td>No aplica (comprometida, sin ejecución en el período)</td></tr>`;
+  });
+
+  const cf = parseFloat(document.getElementById("cf-final").textContent);
+  const cat = categoriaCF(cf);
+  document.getElementById("doc-cf-valor").textContent = cf.toFixed(2);
+  document.getElementById("doc-cf-cat").textContent = cat ? cat.cat : "";
+
+  document.getElementById("doc-fecha").textContent = "Fecha de emisión: " + new Date().toLocaleDateString("es-CL", {year:"numeric", month:"long", day:"numeric"});
+
+  renderRetroalimentacion();
+  renderFirmasControl();
+  renderFirmasDocumento();
+}
+
+function renderRetroalimentacion(){
+  const cont = document.getElementById("doc-retro");
+  let html = `<div class="titulo">Fundamentos y retroalimentación de la comisión, por área</div>`;
+
+  AREAS.forEach(area=>{
+    const n = deliberaciones[area].nivel;
+    const cat = RUBRICA[n].cat;
+    html += `<div class="retro-area">
+      <div class="area-nombre">${area} <span class="n">— Nivel acordado: ${n} (${cat})</span></div>
+      <div class="retro-grid">`;
+    datosCargados.evaluaciones.forEach(e=>{
+      const d = datosArea(e, area);
+      const fund = d?.fundamento || "Sin fundamento registrado.";
+      const retro = d?.retroalimentacion || "Sin retroalimentación registrada.";
+      html += `<div class="retro-card">
+        <div class="autor">${e.comisionado.nombre}</div>
+        <div class="retro-sub">Fundamento</div>
+        <div class="texto">${fund}</div>
+        <div class="retro-sub">Retroalimentación</div>
+        <div class="texto">${retro}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  areasExcluidas.forEach(area=>{
+    html += `<div class="retro-area">
+      <div class="area-nombre">${area} <span class="n">— No aplica</span></div>
+      <div class="retro-vacia">Actividad comprometida sin ejecución en el período: no se evalúa ni se retroalimenta.</div>
+    </div>`;
+  });
+
+  cont.innerHTML = html;
+}
+
+function renderFirmasControl(){
+  firmado = {};
+  const cont = document.getElementById("firmas-control-cont");
+  cont.innerHTML = datosCargados.evaluaciones.map((e, i)=>{
+    const num = i + 1;
+    firmado[num] = false;
+    return `
+      <div class="firma-fila" id="firma-fila-${num}">
+        <div class="info">
+          <div class="n">${e.comisionado.nombre}</div>
+          <div class="e">${e.comisionado.correo || ""} · Comisionado ${num}</div>
+        </div>
+        <label class="chk-firmar"><input type="checkbox" class="chk" data-com="${num}"> He revisado y firmo este informe</label>
+      </div>`;
+  }).join("");
+
+  cont.querySelectorAll(".chk").forEach(chk=>{
+    chk.addEventListener("change", ()=>{
+      const com = chk.dataset.com;
+      firmado[com] = chk.checked;
+      document.getElementById(`firma-fila-${com}`).classList.toggle("firmada", chk.checked);
+      renderFirmasDocumento();
+      const todasFirmadas = Object.values(firmado).every(v=>v);
+      document.getElementById("btn-finalizar").disabled = !todasFirmadas;
+    });
+  });
+
+  document.getElementById("btn-finalizar").disabled = true;
+}
+
+function renderFirmasDocumento(){
+  const cont = document.getElementById("doc-firmas");
+  cont.innerHTML = datosCargados.evaluaciones.map((e, i)=>{
+    const num = i + 1;
+    const ok = firmado[num];
+    return `
+      <div class="doc-firma">
+        <div class="linea">
+          <div class="nombre">${e.comisionado.nombre}</div>
+          <div class="rol">Comisionado ${num}</div>
+          <div class="estado ${ok ? "ok" : "pend"}">${ok ? "Firmado" : "Firma pendiente"}</div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+document.getElementById("btn-finalizar").onclick = ()=>{
+  const resultado = {
+    timestamp: new Date().toISOString(),
+    academico: datosCargados.academico,
+    deliberaciones: deliberaciones,
+    cf_final: parseFloat(document.getElementById("doc-cf-valor").textContent),
+    firmas: {}
+  };
+  datosCargados.evaluaciones.forEach((e, i)=>{
+    resultado.firmas[`comisionado${i+1}`] = {nombre: e.comisionado.nombre, email: e.comisionado.correo};
+  });
+
+  const blob = new Blob([JSON.stringify(resultado, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `resultado_deliberacion_${datosCargados.academico.nombre?.replace(/ /g, "_")}_${new Date().toISOString().split("T")[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  document.getElementById("aviso-bloqueo").classList.add("oculto");
+  document.getElementById("aviso-final").classList.remove("oculto");
+  document.getElementById("panel-firma-control").classList.add("oculto");
+  document.getElementById("btn-volver").disabled = true;
+  document.getElementById("btn-finalizar").disabled = true;
+  document.getElementById("btn-finalizar").textContent = "Evaluación finalizada";
+
+  window.print();
+};
+</script>
+</body>
+</html>
