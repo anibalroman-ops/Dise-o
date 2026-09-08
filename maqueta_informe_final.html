@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maqueta — Informe Final (nueva sección del Panel de Deliberación)</title>
+<style>
+  :root{
+    --primary:#4F46E5;
+    --primary-dark:#4338CA;
+    --primary-light:#F0F4FF;
+    --success:#10B981;
+    --warning:#F59E0B;
+    --error:#EF4444;
+    --neutral:#6B7280;
+    --neutral-light:#9CA3AF;
+    --gray-50:#F9FAFB;
+    --gray-100:#F3F4F6;
+    --gray-200:#E5E7EB;
+    --gray-300:#D1D5DB;
+    --gray-600:#4B5563;
+    --gray-700:#374151;
+    --gray-900:#111827;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:#F3F4F6;
+    color:#1F2937;
+    font-family:"Segoe UI","Inter",-apple-system,system-ui,Roboto,Arial,sans-serif;
+    font-size:14px;
+    line-height:1.6;
+  }
+
+  /* ========== Header ========== */
+  .header{
+    position:sticky; top:0; z-index:40;
+    background:#fff; border-bottom:1px solid var(--gray-200);
+    box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    padding:14px 32px;
+    display:flex; justify-content:space-between; align-items:center; gap:24px;
+  }
+  .header-logo{font-size:18px;font-weight:700;color:var(--primary)}
+  .header-nota{font-size:11px;color:var(--neutral-light)}
+
+  /* ========== Barra de pasos ========== */
+  .barra-pasos{
+    max-width:900px;margin:24px auto 0;padding:0 32px;
+    display:flex;align-items:center;gap:0;
+  }
+  .paso-item{
+    flex:1;display:flex;align-items:center;gap:10px;
+    font-size:12px;font-weight:700;color:var(--neutral-light);
+  }
+  .paso-item .bola{
+    width:26px;height:26px;border-radius:50%;
+    background:var(--gray-200);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;flex-shrink:0;
+  }
+  .paso-item.activo{color:var(--primary-dark)}
+  .paso-item.activo .bola{background:var(--primary)}
+  .paso-item.hecho .bola{background:var(--success)}
+  .paso-linea{flex:0 0 60px;height:2px;background:var(--gray-200);margin:0 4px}
+  .paso-linea.hecho{background:var(--success)}
+
+  .contenedor{max-width:900px;margin:0 auto;padding:24px 32px 64px}
+
+  .tarjeta{
+    background:#fff;border-radius:10px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    padding:28px 32px;margin-bottom:24px;
+  }
+  .tarjeta h2{font-size:16px;font-weight:700;margin:0 0 16px;color:var(--primary)}
+  .oculto{display:none !important}
+
+  /* ========== PASO 1 (resumen simplificado de la deliberación ya hecha) ========== */
+  table.resumen{width:100%;border-collapse:collapse;font-size:13px}
+  table.resumen th{
+    text-align:left;padding:8px 10px;background:var(--gray-50);
+    border-bottom:2px solid var(--gray-200);font-size:11px;
+    text-transform:uppercase;letter-spacing:.04em;color:var(--gray-600);
+  }
+  table.resumen td{padding:9px 10px;border-bottom:1px solid var(--gray-100)}
+  .badge-nivel{
+    display:inline-flex;align-items:center;justify-content:center;
+    min-width:28px;padding:2px 8px;border-radius:20px;
+    font-weight:700;font-size:12px;
+  }
+  .badge-nivel[data-n="0"]{background:#FEE2E2;color:#DC2626}
+  .badge-nivel[data-n="1"]{background:#FEF3C7;color:#B45309}
+  .badge-nivel[data-n="2"]{background:var(--gray-100);color:var(--gray-700)}
+  .badge-nivel[data-n="3"]{background:#DBEAFE;color:#1D4ED8}
+  .badge-nivel[data-n="4"]{background:#DCFCE7;color:#15803D}
+  .fila-excluida td{color:var(--neutral-light);font-style:italic}
+
+  .cf-preview{
+    display:flex;align-items:center;gap:24px;
+    background:var(--primary-light);border-radius:10px;
+    padding:18px 24px;margin-top:20px;
+  }
+  .cf-numero{font-size:34px;font-weight:800;color:var(--primary-dark);line-height:1}
+  .cf-cat{font-size:13px;font-weight:700;margin-top:2px}
+  .cf-texto{font-size:12px;color:var(--gray-600)}
+
+  .botones-paso{display:flex;justify-content:flex-end;margin-top:24px}
+  .btn-primario{
+    padding:12px 24px;background:var(--primary);color:#fff;border:none;
+    border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;
+  }
+  .btn-primario:hover{background:var(--primary-dark)}
+  .btn-primario:disabled{background:var(--gray-300);cursor:not-allowed}
+  .btn-secundario{
+    padding:12px 20px;background:#fff;color:var(--gray-700);
+    border:1px solid var(--gray-300);border-radius:8px;
+    font-weight:600;font-size:13px;cursor:pointer;margin-right:auto;
+  }
+  .btn-secundario:hover{background:var(--gray-50)}
+
+  /* ========== PASO 2: Informe final (documento imprimible) ========== */
+  #hoja-informe{
+    background:#fff;
+    max-width:760px;margin:0 auto;
+    padding:48px 56px;
+    color:#2b2b2b;
+    font-family:Georgia,"Times New Roman",serif;
+  }
+  #hoja-informe .doc-header{
+    text-align:center;border-bottom:2px solid #2b2b2b;padding-bottom:14px;margin-bottom:22px;
+  }
+  #hoja-informe .doc-inst{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#555}
+  #hoja-informe .doc-titulo{font-size:19px;font-weight:700;margin-top:6px}
+  #hoja-informe .doc-sub{font-size:12px;color:#666;margin-top:4px}
+
+  .doc-datos{
+    display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;
+    font-size:13px;margin-bottom:22px;
+  }
+  .doc-datos div span{color:#777;font-size:11px;text-transform:uppercase;letter-spacing:.03em;display:block}
+
+  table.doc-tabla{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:18px}
+  table.doc-tabla th{
+    text-align:left;padding:7px 8px;background:#2b2b2b;color:#fff;font-size:11px;
+    text-transform:uppercase;letter-spacing:.03em;font-weight:600;
+  }
+  table.doc-tabla td{padding:7px 8px;border-bottom:1px solid #ddd;vertical-align:top}
+  table.doc-tabla td.num{text-align:center;white-space:nowrap}
+  table.doc-tabla tr.excluida td{color:#999;font-style:italic}
+
+  .doc-cf{
+    display:flex;align-items:center;gap:20px;
+    border:1.5px solid #2b2b2b;border-radius:6px;
+    padding:14px 18px;margin:20px 0;
+  }
+  .doc-cf .valor{font-size:30px;font-weight:800}
+  .doc-cf .cat{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+  .doc-cf .ref{font-size:11px;color:#666;margin-left:auto;max-width:230px;text-align:right}
+
+  .doc-obs{font-size:12.5px;color:#444;margin-bottom:18px}
+  .doc-obs span{display:block;font-size:11px;text-transform:uppercase;color:#777;margin-bottom:3px}
+
+  .doc-firmas{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px}
+  .doc-firma{font-size:11.5px;text-align:center}
+  .doc-firma .linea{border-top:1px solid #2b2b2b;margin-top:34px;padding-top:6px}
+  .doc-firma .nombre{font-weight:700}
+  .doc-firma .rol{color:#777;font-size:10.5px}
+  .doc-firma .estado{margin-top:4px;font-size:10.5px}
+  .doc-firma .estado.ok{color:#15803D;font-weight:700}
+  .doc-firma .estado.pend{color:#B45309}
+
+  .doc-footer{
+    margin-top:28px;padding-top:10px;border-top:1px solid #ccc;
+    display:flex;justify-content:space-between;font-size:10px;color:#888;
+  }
+
+  /* ========== Panel de firma (fuera del documento, interfaz de control) ========== */
+  .panel-firma-control{margin-top:24px}
+  .firma-fila{
+    display:flex;align-items:center;gap:14px;
+    padding:12px 14px;border:1px solid var(--gray-200);border-radius:8px;margin-bottom:10px;
+  }
+  .firma-fila .info{flex:1}
+  .firma-fila .info .n{font-weight:700;font-size:13px}
+  .firma-fila .info .e{font-size:11px;color:var(--neutral-light)}
+  .chk-firmar{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;cursor:pointer;user-select:none}
+  .chk-firmar input{width:17px;height:17px;cursor:pointer}
+  .firma-fila.firmada{border-color:var(--success);background:#F0FDF4}
+
+  .aviso-bloqueo{
+    background:#FEF3C7;border:1px solid #FDE68A;color:#92400E;
+    border-radius:8px;padding:12px 16px;font-size:12.5px;margin-bottom:20px;
+    display:flex;gap:10px;align-items:flex-start;
+  }
+  .aviso-final{
+    background:#F0FDF4;border:1px solid #BBF7D0;color:#166534;
+    border-radius:8px;padding:14px 16px;font-size:13px;margin-bottom:20px;
+    display:flex;gap:10px;align-items:center;font-weight:600;
+  }
+
+  /* ========== Impresión ========== */
+  @media print{
+    .header,.barra-pasos,.botones-paso,.panel-firma-control,.tarjeta > h2,
+    #paso1, .no-imprimir{display:none !important}
+    body{background:#fff}
+    .contenedor{max-width:none;padding:0;margin:0}
+    .tarjeta{box-shadow:none;padding:0;margin:0;border-radius:0}
+    #hoja-informe{padding:0;max-width:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">Panel de Deliberación — Comisión</div>
+  <div class="header-nota">MAQUETA — nueva sección "Informe final" (aún no integrada al sistema)</div>
+</div>
+
+<div class="barra-pasos">
+  <div class="paso-item hecho" id="paso-ind-1">
+    <div class="bola">✓</div><span>Deliberación</span>
+  </div>
+  <div class="paso-linea hecho" id="linea-pasos"></div>
+  <div class="paso-item activo" id="paso-ind-2">
+    <div class="bola">2</div><span>Informe final y firma</span>
+  </div>
+</div>
+
+<div class="contenedor">
+
+  <!-- ============ PASO 1 (contexto, colapsado por defecto) ============ -->
+  <div class="tarjeta" id="paso1">
+    <h2>Deliberación completada</h2>
+    <table class="resumen">
+      <thead>
+        <tr><th>Área</th><th style="text-align:center">Nivel acordado</th></tr>
+      </thead>
+      <tbody id="tbody-resumen-paso1"></tbody>
+    </table>
+    <div class="cf-preview">
+      <div>
+        <div class="cf-numero" id="cf-paso1">—</div>
+        <div class="cf-cat" id="cf-cat-paso1"></div>
+      </div>
+      <div class="cf-texto">Suma ponderada de los niveles acordados, usando las horas comprometidas por área (Art. 35).</div>
+    </div>
+    <div class="botones-paso">
+      <button class="btn-primario" id="btn-ir-informe">Continuar al informe final →</button>
+    </div>
+  </div>
+
+  <!-- ============ PASO 2 (nueva sección) ============ -->
+  <div class="tarjeta oculto" id="paso2">
+    <h2 class="no-imprimir">Vista previa del informe final</h2>
+
+    <div class="aviso-bloqueo no-imprimir" id="aviso-bloqueo">
+      Este documento se genera automáticamente a partir de los niveles acordados en la deliberación. Revíselo y, si está correcto, cada comisionado debe firmar abajo para poder finalizar la evaluación.
+    </div>
+    <div class="aviso-final oculto" id="aviso-final">
+      ✓ Evaluación finalizada y firmada por la comisión completa. El informe ya no puede modificarse.
+    </div>
+
+    <!-- Documento imprimible -->
+    <div id="hoja-informe">
+      <div class="doc-header">
+        <div class="doc-inst">Universidad de Santiago de Chile — Facultad de Ingeniería</div>
+        <div class="doc-titulo">Informe Final de Evaluación de Desempeño Académico</div>
+        <div class="doc-sub">Convenio de Desempeño Académico — Período 2026</div>
+      </div>
+
+      <div class="doc-datos">
+        <div><span>Académico(a)</span>Nombre Apellido Apellido</div>
+        <div><span>Unidad</span>Depto. de Ingeniería Industrial</div>
+        <div><span>Jerarquía académica</span>Profesor Asociado</div>
+        <div><span>Jornada contractual</span>44 horas semanales</div>
+      </div>
+
+      <table class="doc-tabla">
+        <thead>
+          <tr>
+            <th>Área</th>
+            <th class="num">Ponderación</th>
+            <th class="num">Nivel acordado</th>
+            <th>Categoría</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-doc-areas"></tbody>
+      </table>
+
+      <div class="doc-cf">
+        <div class="valor" id="doc-cf-valor">2.24</div>
+        <div class="cat" id="doc-cf-cat">Aceptable</div>
+        <div class="ref">Calificación Final según escala del Art. 35 del Manual de Evaluación de Desempeño Académico.</div>
+      </div>
+
+      <div class="doc-obs">
+        <span>Observaciones de la comisión</span>
+        Sin observaciones adicionales registradas por la comisión para este período.
+      </div>
+
+      <div class="doc-firmas" id="doc-firmas">
+        <!-- generado por JS -->
+      </div>
+
+      <div class="doc-footer">
+        <span>Documento generado por el Panel de Deliberación — v. maqueta</span>
+        <span id="doc-fecha"></span>
+      </div>
+    </div>
+
+    <!-- Control de firma (no se imprime) -->
+    <div class="panel-firma-control no-imprimir" id="panel-firma-control">
+      <h2 style="margin-top:28px">Firma de la comisión</h2>
+      <div class="firma-fila" id="firma-fila-1">
+        <div class="info">
+          <div class="n">Muriel Salgado</div>
+          <div class="e">msalgado@usach.cl · Comisionado 1</div>
+        </div>
+        <label class="chk-firmar"><input type="checkbox" class="chk" data-com="1"> He revisado y firmo este informe</label>
+      </div>
+      <div class="firma-fila" id="firma-fila-2">
+        <div class="info">
+          <div class="n">Francisco Montaner</div>
+          <div class="e">fmontaner@usach.cl · Comisionado 2</div>
+        </div>
+        <label class="chk-firmar"><input type="checkbox" class="chk" data-com="2"> He revisado y firmo este informe</label>
+      </div>
+      <div class="firma-fila" id="firma-fila-3">
+        <div class="info">
+          <div class="n">Anibal Roman</div>
+          <div class="e">aroman@usach.cl · Comisionado 3</div>
+        </div>
+        <label class="chk-firmar"><input type="checkbox" class="chk" data-com="3"> He revisado y firmo este informe</label>
+      </div>
+    </div>
+
+    <div class="botones-paso no-imprimir">
+      <button class="btn-secundario" id="btn-volver">← Volver a deliberación</button>
+      <button class="btn-primario" id="btn-finalizar" disabled>Finalizar evaluación y exportar PDF</button>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+const AREAS_HORAS = {
+  "Docencia": 14, "Investigación y desarrollo": 10, "Extensión - VIME": 4,
+  "Extensión - Educación continua": 3, "Administración académica": 7, "Perfeccionamiento": 3
+};
+const AREA_EXCLUIDA = "Asistencia técnica"; // ejemplo: comprometida, 0 horas realizadas
+
+const NIVELES_ACORDADOS = {
+  "Docencia": 2, "Investigación y desarrollo": 3, "Extensión - VIME": 2,
+  "Extensión - Educación continua": 2, "Administración académica": 2, "Perfeccionamiento": 2
+};
+
+const RUBRICA = [
+  {n:0, cat:"Insuficiente"}, {n:1, cat:"Condicional"}, {n:2, cat:"Aceptable"},
+  {n:3, cat:"Bueno"}, {n:4, cat:"Sobresaliente"}
+];
+
+const CF_RANGOS = [
+  {min:3.70, max:4.00, cat:"Sobresaliente"},
+  {min:2.80, max:3.69, cat:"Bueno"},
+  {min:2.00, max:2.79, cat:"Aceptable"},
+  {min:1.50, max:1.99, cat:"Condicional"},
+  {min:0.00, max:1.49, cat:"Insuficiente"}
+];
+function categoriaCF(v){ return CF_RANGOS.find(r=> v>=r.min && v<=r.max) || null; }
+
+function calcularCF(){
+  const areas = Object.keys(AREAS_HORAS);
+  const totalH = areas.reduce((a,k)=>a+AREAS_HORAS[k],0);
+  let suma = 0;
+  areas.forEach(a=> suma += NIVELES_ACORDADOS[a] * (AREAS_HORAS[a]/totalH));
+  return Math.round(suma*100)/100;
+}
+
+// ---------- Render Paso 1 ----------
+function renderPaso1(){
+  const tbody = document.getElementById("tbody-resumen-paso1");
+  tbody.innerHTML = "";
+  Object.keys(AREAS_HORAS).forEach(area=>{
+    const n = NIVELES_ACORDADOS[area];
+    tbody.innerHTML += `<tr><td>${area}</td><td style="text-align:center"><span class="badge-nivel" data-n="${n}">${n}</span></td></tr>`;
+  });
+  tbody.innerHTML += `<tr class="fila-excluida"><td>${AREA_EXCLUIDA}</td><td style="text-align:center">No aplica</td></tr>`;
+
+  const cf = calcularCF();
+  const cat = categoriaCF(cf);
+  document.getElementById("cf-paso1").textContent = cf.toFixed(2);
+  document.getElementById("cf-cat-paso1").textContent = cat ? cat.cat : "";
+}
+
+// ---------- Render Paso 2 (documento) ----------
+function renderDocumento(){
+  const tbody = document.getElementById("tbody-doc-areas");
+  tbody.innerHTML = "";
+  Object.keys(AREAS_HORAS).forEach(area=>{
+    const n = NIVELES_ACORDADOS[area];
+    const cat = RUBRICA[n].cat;
+    const pond = AREAS_HORAS[area];
+    tbody.innerHTML += `<tr><td>${area}</td><td class="num">${pond} h</td><td class="num">${n}</td><td>${cat}</td></tr>`;
+  });
+  tbody.innerHTML += `<tr class="excluida"><td>${AREA_EXCLUIDA}</td><td class="num">—</td><td class="num">—</td><td>No aplica (comprometida, sin ejecución en el período)</td></tr>`;
+
+  const cf = calcularCF();
+  const cat = categoriaCF(cf);
+  document.getElementById("doc-cf-valor").textContent = cf.toFixed(2);
+  document.getElementById("doc-cf-cat").textContent = cat ? cat.cat : "";
+
+  document.getElementById("doc-fecha").textContent = "Fecha de emisión: " + new Date().toLocaleDateString("es-CL", {year:"numeric", month:"long", day:"numeric"});
+
+  renderFirmasDocumento();
+}
+
+const COMISIONADOS = [
+  {n:1, nombre:"Muriel Salgado", rol:"Comisionado 1"},
+  {n:2, nombre:"Francisco Montaner", rol:"Comisionado 2"},
+  {n:3, nombre:"Anibal Roman", rol:"Comisionado 3"}
+];
+const firmado = {1:false, 2:false, 3:false};
+
+function renderFirmasDocumento(){
+  const cont = document.getElementById("doc-firmas");
+  cont.innerHTML = COMISIONADOS.map(c=>{
+    const ok = firmado[c.n];
+    return `
+      <div class="doc-firma">
+        <div class="linea">
+          <div class="nombre">${c.nombre}</div>
+          <div class="rol">${c.rol}</div>
+          <div class="estado ${ok ? "ok" : "pend"}">${ok ? "Firmado" : "Firma pendiente"}</div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+// ---------- Navegación entre pasos ----------
+document.getElementById("btn-ir-informe").onclick = ()=>{
+  document.getElementById("paso1").classList.add("oculto");
+  document.getElementById("paso2").classList.remove("oculto");
+  document.getElementById("paso-ind-1").classList.remove("activo");
+  window.scrollTo({top:0, behavior:"smooth"});
+};
+document.getElementById("btn-volver").onclick = ()=>{
+  document.getElementById("paso2").classList.add("oculto");
+  document.getElementById("paso1").classList.remove("oculto");
+  window.scrollTo({top:0, behavior:"smooth"});
+};
+
+// ---------- Firma ----------
+document.querySelectorAll(".chk").forEach(chk=>{
+  chk.addEventListener("change", ()=>{
+    const com = chk.dataset.com;
+    firmado[com] = chk.checked;
+    document.getElementById(`firma-fila-${com}`).classList.toggle("firmada", chk.checked);
+    renderFirmasDocumento();
+    const todasFirmadas = Object.values(firmado).every(v=>v);
+    document.getElementById("btn-finalizar").disabled = !todasFirmadas;
+  });
+});
+
+// ---------- Finalizar y exportar PDF ----------
+document.getElementById("btn-finalizar").onclick = ()=>{
+  document.getElementById("aviso-bloqueo").classList.add("oculto");
+  document.getElementById("aviso-final").classList.remove("oculto");
+  document.getElementById("panel-firma-control").classList.add("oculto");
+  document.getElementById("btn-volver").disabled = true;
+  document.getElementById("btn-finalizar").textContent = "Evaluación finalizada";
+  window.print();
+};
+
+renderPaso1();
+renderDocumento();
+</script>
+
+</body>
+</html>
