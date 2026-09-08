@@ -821,36 +821,6 @@
     font-weight:700;
     width:180px;
   }
-  .rub-escala-tabla{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:14px;
-    font-size:12px;
-  }
-  .rub-escala-tabla th{
-    background:var(--tinta);
-    color:#fff;
-    text-align:left;
-    padding:8px 10px;
-    font-size:11px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.04em;
-  }
-  .rub-escala-tabla td{
-    padding:10px;
-    border-bottom:1px solid var(--gray-200);
-    vertical-align:top;
-    line-height:1.6;
-  }
-  .rub-escala-tabla td:first-child{width:34px;text-align:center;font-weight:700;font-size:15px}
-  .rub-escala-tabla td:nth-child(2){width:120px;font-weight:700}
-  .rub-escala-tabla tr[data-n="0"] td:nth-child(2){color:var(--n0)}
-  .rub-escala-tabla tr[data-n="1"] td:nth-child(2){color:var(--n1)}
-  .rub-escala-tabla tr[data-n="2"] td:nth-child(2){color:var(--n2)}
-  .rub-escala-tabla tr[data-n="3"] td:nth-child(2){color:var(--n3)}
-  .rub-escala-tabla tr[data-n="4"] td:nth-child(2){color:var(--n4)}
-
   .pendiente-guia{
     font-style:italic;
     color:var(--neutral-light);
@@ -1177,8 +1147,6 @@
           </tr>
         </table>
 
-        <h3>Escala general de niveles de desempeño</h3>
-        <div id="rubrica-completa-tabla"></div>
       </div>
     </details>
     <details class="plegable" id="det-guia">
@@ -1287,14 +1255,6 @@ const CF_RANGOS = [
 function categoriaCF(valor){
   return CF_RANGOS.find(r=> valor>=r.min && valor<=r.max) || null;
 }
-function renderRubricaCompleta(){
-  const cont = document.getElementById("rubrica-completa-tabla");
-  const filas = [...RUBRICA].sort((a,b)=> b.n-a.n).map(r=>
-    `<tr data-n="${r.n}"><td>${r.n}</td><td>${r.cat}</td><td>${r.d}</td></tr>`
-  ).join("");
-  cont.innerHTML = `<table class="rub-escala-tabla"><thead><tr><th>Nivel</th><th>Categoría</th><th>Descripción del desempeño</th></tr></thead><tbody>${filas}</tbody></table>`;
-}
-
 /* ========================================================================= */
 let paso = 0, inicioP2 = null, cronoId = null, incidentes = [], modalIdx = null;
 const evalArea = AREAS.map(()=>({n:null, fund:"", retro:""}));
@@ -1656,7 +1616,6 @@ document.getElementById("btn-reiniciar").onclick = ()=> location.reload();
 renderResumen();
 renderAntecedentes();
 renderIncidentes();
-renderRubricaCompleta();
 calcularCF();
 validarP0();
 irA(0);

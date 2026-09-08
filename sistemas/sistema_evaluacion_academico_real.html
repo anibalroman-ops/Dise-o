@@ -821,36 +821,6 @@
     font-weight:700;
     width:180px;
   }
-  .rub-escala-tabla{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:14px;
-    font-size:12px;
-  }
-  .rub-escala-tabla th{
-    background:var(--tinta);
-    color:#fff;
-    text-align:left;
-    padding:8px 10px;
-    font-size:11px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.04em;
-  }
-  .rub-escala-tabla td{
-    padding:10px;
-    border-bottom:1px solid var(--gray-200);
-    vertical-align:top;
-    line-height:1.6;
-  }
-  .rub-escala-tabla td:first-child{width:34px;text-align:center;font-weight:700;font-size:15px}
-  .rub-escala-tabla td:nth-child(2){width:120px;font-weight:700}
-  .rub-escala-tabla tr[data-n="0"] td:nth-child(2){color:var(--n0)}
-  .rub-escala-tabla tr[data-n="1"] td:nth-child(2){color:var(--n1)}
-  .rub-escala-tabla tr[data-n="2"] td:nth-child(2){color:var(--n2)}
-  .rub-escala-tabla tr[data-n="3"] td:nth-child(2){color:var(--n3)}
-  .rub-escala-tabla tr[data-n="4"] td:nth-child(2){color:var(--n4)}
-
   .pendiente-guia{
     font-style:italic;
     color:var(--neutral-light);
@@ -1177,8 +1147,6 @@
           </tr>
         </table>
 
-        <h3>Escala general de niveles de desempeño</h3>
-        <div id="rubrica-completa-tabla"></div>
       </div>
     </details>
     <details class="plegable" id="det-guia">
@@ -1259,7 +1227,10 @@ const AREAS = [
    {act:"Otras actividades", res:"Elaboración de programas de asignatura.",
     ev:["Pendiente: evidencia documental"], est:"cumplido", hc:0.4, hr:0.4}
   ],
-  guia:null},
+  guia:{fuente:"Anexo II · Guía Orientadora de Actividades y Evidencias en Docencia — 7. Profesor Asociado, Área Docencia",
+   perfil:"El Profesor Asociado debe evidenciar autonomía, creatividad y capacidad de conducción en el desarrollo de actividades docentes. Su desempeño se espera más consolidado que el del Profesor Asistente, aunque no necesariamente con el mismo nivel de liderazgo institucional amplio exigible a un Profesor Titular.",
+   normativo:"El Decreto 26 señala que al Profesor Asociado le corresponde conducir y/o ejecutar actividades académicas. En docencia, considera dictar asignaturas, dictar cursos de postgrado y postítulo, elaborar material docente, guiar tesis o trabajos de titulación, y dirigir o colaborar en la elaboración de planes y programas de estudio.",
+   actividades:"Docencia directa frente a alumnos en pregrado, postgrado o cursos de especialidad; preparación de clases, pruebas, controles, guías y apuntes; corrección de pruebas y trabajos; atención personalizada de estudiantes y tutorías; guía de memorias de título y supervisión de prácticas."}},
  {area:"Investigación y desarrollo", hc:25.4, hr:31.1,
   compromisos:[
    {act:"Elaboración de proyectos de investigación y desarrollo", res:"Incluye postulación a fondos Fondecyt y FONDEF.",
@@ -1279,7 +1250,10 @@ const AREAS = [
    {act:"Otras actividades", res:"Implementación y montaje de laboratorio de Complex Dynamics Systems and Control.",
     ev:["Pendiente: evidencia documental"], est:"cumplido", hc:1.6, hr:1.6}
   ],
-  guia:null},
+  guia:{fuente:"Anexo III · Guía Orientadora de Actividades y Evidencias en Investigación y Desarrollo — B. Profesor Asociado, Área Investigación y Desarrollo",
+   perfil:"El Profesor Asociado debe evidenciar autonomía, creatividad y dominio disciplinar en investigación y desarrollo. Se espera que conduzca o ejecute trabajos de investigación, participe en la dirección de líneas o grupos, produzca resultados comunicables y colabore en la formación de nuevos investigadores.",
+   normativo:"El Decreto 26 asigna al Profesor Asociado funciones como realizar trabajos de investigación, dirigir líneas y grupos, colaborar en la formación de nuevos investigadores, publicar en revistas especializadas de prestigio nacional y presentar trabajos en congresos.",
+   actividades:"Formulación o coformulación de proyectos (ANID, CORFO, DICYT-VRIIC, FIU-VRIIC, GORE, entre otros); ejecución como responsable, coinvestigador o colaborador principal; producción académica sistemática (artículos, libros, capítulos); participación en resultados aplicados o transferencia; organización de encuentros científico-tecnológicos."}},
  {area:"Administración académica", hc:0.3, hr:0.3,
   compromisos:[
    {act:"Consejo Departamental", res:"Participación en sesión de Consejo Departamental, un miércoles al mes por 1,5 horas cada vez.",
@@ -1312,14 +1286,6 @@ const CF_RANGOS = [
 function categoriaCF(valor){
   return CF_RANGOS.find(r=> valor>=r.min && valor<=r.max) || null;
 }
-function renderRubricaCompleta(){
-  const cont = document.getElementById("rubrica-completa-tabla");
-  const filas = [...RUBRICA].sort((a,b)=> b.n-a.n).map(r=>
-    `<tr data-n="${r.n}"><td>${r.n}</td><td>${r.cat}</td><td>${r.d}</td></tr>`
-  ).join("");
-  cont.innerHTML = `<table class="rub-escala-tabla"><thead><tr><th>Nivel</th><th>Categoría</th><th>Descripción del desempeño</th></tr></thead><tbody>${filas}</tbody></table>`;
-}
-
 /* ========================================================================= */
 let paso = 0, inicioP2 = null, cronoId = null, incidentes = [], modalIdx = null;
 const evalArea = AREAS.map(()=>({n:null, fund:"", retro:""}));
@@ -1681,7 +1647,6 @@ document.getElementById("btn-reiniciar").onclick = ()=> location.reload();
 renderResumen();
 renderAntecedentes();
 renderIncidentes();
-renderRubricaCompleta();
 calcularCF();
 validarP0();
 irA(0);
