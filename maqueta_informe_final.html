@@ -159,6 +159,19 @@
   .doc-obs{font-size:12.5px;color:#444;margin-bottom:18px}
   .doc-obs span{display:block;font-size:11px;text-transform:uppercase;color:#777;margin-bottom:3px}
 
+  .doc-retro{margin-bottom:22px}
+  .doc-retro > .titulo{
+    font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#777;
+    border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:12px;
+  }
+  .retro-area{margin-bottom:14px;page-break-inside:avoid}
+  .retro-area .area-nombre{font-size:13px;font-weight:700;margin-bottom:6px}
+  .retro-area .area-nombre .n{font-weight:400;color:#666;font-size:11.5px}
+  .retro-item{display:flex;gap:10px;font-size:12px;color:#333;margin-bottom:5px;padding-left:2px}
+  .retro-item .autor{flex:0 0 150px;font-weight:700;color:#555}
+  .retro-item .texto{flex:1}
+  .retro-vacia{font-size:11.5px;color:#999;font-style:italic}
+
   .doc-firmas{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px}
   .doc-firma{font-size:11.5px;text-align:center}
   .doc-firma .linea{border-top:1px solid #2b2b2b;margin-top:34px;padding-top:6px}
@@ -292,10 +305,7 @@
         <div class="ref">Calificación Final según escala del Art. 35 del Manual de Evaluación de Desempeño Académico.</div>
       </div>
 
-      <div class="doc-obs">
-        <span>Observaciones de la comisión</span>
-        Sin observaciones adicionales registradas por la comisión para este período.
-      </div>
+      <div class="doc-retro" id="doc-retro"></div>
 
       <div class="doc-firmas" id="doc-firmas">
         <!-- generado por JS -->
@@ -352,6 +362,43 @@ const AREA_EXCLUIDA = "Asistencia técnica"; // ejemplo: comprometida, 0 horas r
 const NIVELES_ACORDADOS = {
   "Docencia": 2, "Investigación y desarrollo": 3, "Extensión - VIME": 2,
   "Extensión - Educación continua": 2, "Administración académica": 2, "Perfeccionamiento": 2
+};
+
+// Retroalimentación que cada comisionado escribió al evaluar cada área
+// (dato ya existente en "Datos brutos", columna "(Retro)" de cada área;
+// hoy no se exporta en generarJSONDeliberacion() — hay que agregarlo ahí
+// para que esta sección se llene con datos reales al integrar).
+const RETRO_POR_AREA = {
+  "Docencia": {
+    "Muriel Salgado": "Cumple con las horas de docencia directa comprometidas. Se sugiere diversificar las metodologías de evaluación en el curso de pregrado a cargo.",
+    "Francisco Montaner": "Buen desempeño general. Los resultados de encuesta docente están dentro del rango esperado para la jerarquía.",
+    "Anibal Roman": "Cumplimiento mínimo reconocible. Falta evidencia de innovación metodológica declarada en el convenio."
+  },
+  "Investigación y desarrollo": {
+    "Muriel Salgado": "Desempeño destacado: dos publicaciones indexadas y participación activa en proyecto Fondecyt en curso.",
+    "Francisco Montaner": "Supera lo comprometido en el CDA. Se reconoce la calidad de las publicaciones presentadas como evidencia.",
+    "Anibal Roman": "Muy buen nivel de productividad científica para la jornada y jerarquía evaluadas."
+  },
+  "Extensión - VIME": {
+    "Muriel Salgado": "Actividad de vinculación con el medio ejecutada conforme a lo comprometido, sin observaciones adicionales.",
+    "Francisco Montaner": "Cumplimiento reconocible. La evidencia presentada es escueta; se sugiere documentar mejor el impacto de la actividad.",
+    "Anibal Roman": "Cumple lo mínimo comprometido para esta área en el período evaluado."
+  },
+  "Extensión - Educación continua": {
+    "Muriel Salgado": "Participación correcta en el diplomado declarado, dentro del estándar esperado para la jerarquía.",
+    "Francisco Montaner": "Cumplimiento reconocible, coherente con la dedicación horaria comprometida en el convenio.",
+    "Anibal Roman": "Sin observaciones relevantes; la evidencia acredita lo comprometido."
+  },
+  "Administración académica": {
+    "Muriel Salgado": "Ejerce la jefatura de carrera comprometida con normalidad; se valora la gestión de acreditación en curso.",
+    "Francisco Montaner": "Cumplimiento adecuado de la responsabilidad administrativa asignada para el período.",
+    "Anibal Roman": "Cumple lo comprometido. Se sugiere reforzar la sistematización de los procesos de la unidad."
+  },
+  "Perfeccionamiento": {
+    "Muriel Salgado": "Actividad de perfeccionamiento declarada y acreditada según lo comprometido en el convenio.",
+    "Francisco Montaner": "Cumplimiento mínimo reconocible; se recomienda ampliar la carga horaria de perfeccionamiento el próximo período.",
+    "Anibal Roman": "Cumple lo comprometido para esta área."
+  }
 };
 
 const RUBRICA = [
@@ -411,7 +458,39 @@ function renderDocumento(){
 
   document.getElementById("doc-fecha").textContent = "Fecha de emisión: " + new Date().toLocaleDateString("es-CL", {year:"numeric", month:"long", day:"numeric"});
 
+  renderRetroalimentacion();
   renderFirmasDocumento();
+}
+
+function renderRetroalimentacion(){
+  const cont = document.getElementById("doc-retro");
+  let html = `<div class="titulo">Retroalimentación de la comisión, por área</div>`;
+
+  Object.keys(AREAS_HORAS).forEach(area=>{
+    const n = NIVELES_ACORDADOS[area];
+    const cat = RUBRICA[n].cat;
+    const entradas = RETRO_POR_AREA[area] || {};
+    const nombres = Object.keys(entradas);
+
+    html += `<div class="retro-area">
+      <div class="area-nombre">${area} <span class="n">— Nivel acordado: ${n} (${cat})</span></div>`;
+
+    if(nombres.length === 0){
+      html += `<div class="retro-vacia">Sin retroalimentación registrada por la comisión para esta área.</div>`;
+    } else {
+      nombres.forEach(nombre=>{
+        html += `<div class="retro-item"><div class="autor">${nombre}</div><div class="texto">${entradas[nombre]}</div></div>`;
+      });
+    }
+    html += `</div>`;
+  });
+
+  html += `<div class="retro-area">
+    <div class="area-nombre">${AREA_EXCLUIDA} <span class="n">— No aplica</span></div>
+    <div class="retro-vacia">Actividad comprometida sin ejecución en el período: no se evalúa ni se retroalimenta.</div>
+  </div>`;
+
+  cont.innerHTML = html;
 }
 
 const COMISIONADOS = [
