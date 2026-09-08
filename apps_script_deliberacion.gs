@@ -348,7 +348,8 @@ function generarJSONDeliberacion() {
       return {
         nombre: nombre,
         nivel: nivelNumerico(fila[base]),
-        fundamento: fila[base + 1]
+        fundamento: fila[base + 1],
+        retroalimentacion: fila[base + 2]
       };
     }).filter(a => a.nivel !== "" && a.nivel !== null && a.nivel !== undefined);
 

@@ -51,18 +51,6 @@
     gap:24px;
   }
   .header-logo{font-size:18px;font-weight:700;color:var(--primary)}
-  .header-right{display:flex;gap:12px;align-items:center}
-  .btn-descargar{
-    padding:8px 16px;
-    border:1px solid var(--primary);
-    background:var(--primary);
-    color:#fff;
-    border-radius:6px;
-    font-size:12px;
-    font-weight:600;
-    cursor:pointer;
-  }
-  .btn-descargar:hover{background:var(--primary-dark)}
 
   /* ========== Contenedor ========== */
   .contenedor{
@@ -133,6 +121,8 @@
   .estado-carga.error{background:#FEE2E2;color:#DC2626;border:1px solid #FECACA}
   .estado-carga.info{background:var(--primary-light);color:var(--primary);border:1px solid var(--primary)}
 
+  .oculto{display:none!important}
+
   /* ========== Panel de Deliberación ========== */
   .panel-deliberacion{
     background:#fff;
@@ -140,7 +130,6 @@
     box-shadow:0 1px 3px rgba(0,0,0,0.1);
     padding:28px 32px;
   }
-  .panel-deliberacion.oculto{display:none!important}
 
   .info-academico{
     display:grid;
@@ -465,62 +454,13 @@
     color:var(--primary);
     line-height:1;
   }
+  .cf-cat{font-size:13px;font-weight:700;color:var(--primary-dark);margin-top:2px}
   .cf-texto{
     font-size:13px;
     color:var(--gray-700);
     line-height:1.6;
   }
   .cf-texto b{color:var(--primary)}
-
-  /* ========== Panel de Firmas ========== */
-  .panel-firmas{
-    background:var(--gray-50);
-    border:1px solid var(--gray-200);
-    border-radius:8px;
-    padding:20px;
-    margin-top:32px;
-  }
-  .panel-firmas h3{
-    font-size:14px;
-    font-weight:700;
-    margin:0 0 16px;
-    color:var(--gray-900);
-  }
-  .firmas-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:20px;
-  }
-  .firma-campo{
-    border:1px solid var(--gray-300);
-    border-radius:6px;
-    padding:16px;
-    background:#fff;
-  }
-  .firma-label{
-    font-size:11px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.05em;
-    color:var(--gray-600);
-    margin-bottom:8px;
-  }
-  .firma-input{
-    width:100%;
-    padding:8px 10px;
-    border:1px solid var(--gray-300);
-    border-radius:4px;
-    font:inherit;
-    font-size:12px;
-    margin-bottom:8px;
-  }
-  .firma-linea{
-    border-top:2px solid var(--gray-900);
-    margin-top:8px;
-    padding-top:4px;
-    font-size:10px;
-    color:var(--gray-600);
-  }
 
   /* ========== Botones Finales ========== */
   .botones-finales{
@@ -541,11 +481,140 @@
   }
   .btn-primario:hover{background:var(--primary-dark)}
   .btn-primario:disabled{background:var(--gray-300);cursor:not-allowed}
+  .btn-secundario{
+    padding:12px 20px;
+    background:#fff;
+    color:var(--gray-700);
+    border:1px solid var(--gray-300);
+    border-radius:6px;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    margin-right:auto;
+  }
+  .btn-secundario:hover{background:var(--gray-50)}
+  .btn-secundario:disabled{color:var(--gray-300);cursor:not-allowed;background:#fff}
+
+  /* ========== Barra de pasos ========== */
+  .barra-pasos{
+    display:flex;align-items:center;gap:0;
+    max-width:700px;margin:0 auto 32px;
+  }
+  .paso-item{
+    flex:1;display:flex;align-items:center;gap:10px;
+    font-size:12px;font-weight:700;color:var(--neutral-light);
+  }
+  .paso-item .bola{
+    width:26px;height:26px;border-radius:50%;
+    background:var(--gray-200);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;flex-shrink:0;
+  }
+  .paso-item.activo{color:var(--primary-dark)}
+  .paso-item.activo .bola{background:var(--primary)}
+  .paso-item.hecho .bola{background:var(--success)}
+  .paso-linea{flex:0 0 60px;height:2px;background:var(--gray-200);margin:0 4px}
+  .paso-linea.hecho{background:var(--success)}
+
+  /* ========== Avisos paso 2 ========== */
+  .aviso-bloqueo{
+    background:#FEF3C7;border:1px solid #FDE68A;color:#92400E;
+    border-radius:8px;padding:12px 16px;font-size:12.5px;margin-bottom:20px;
+  }
+  .aviso-final{
+    background:#F0FDF4;border:1px solid #BBF7D0;color:#166534;
+    border-radius:8px;padding:14px 16px;font-size:13px;margin-bottom:20px;font-weight:600;
+  }
+
+  /* ========== Documento imprimible (informe final) ========== */
+  #hoja-informe{
+    background:#fff;max-width:760px;margin:0 auto;padding:40px 48px;
+    color:#2b2b2b;font-family:Georgia,"Times New Roman",serif;
+    border:1px solid var(--gray-200);border-radius:8px;
+  }
+  #hoja-informe .doc-header{text-align:center;border-bottom:2px solid #2b2b2b;padding-bottom:14px;margin-bottom:22px}
+  #hoja-informe .doc-inst{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#555}
+  #hoja-informe .doc-titulo{font-size:19px;font-weight:700;margin-top:6px}
+  #hoja-informe .doc-sub{font-size:12px;color:#666;margin-top:4px}
+  .doc-datos{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:13px;margin-bottom:22px}
+  .doc-datos div span{color:#777;font-size:11px;text-transform:uppercase;letter-spacing:.03em;display:block}
+  table.doc-tabla{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:18px}
+  table.doc-tabla th{
+    text-align:left;padding:7px 8px;background:#2b2b2b;color:#fff;font-size:11px;
+    text-transform:uppercase;letter-spacing:.03em;font-weight:600;
+  }
+  table.doc-tabla td{padding:7px 8px;border-bottom:1px solid #ddd;vertical-align:top}
+  table.doc-tabla td.num{text-align:center;white-space:nowrap}
+  table.doc-tabla tr.excluida td{color:#999;font-style:italic}
+  .doc-cf{
+    display:flex;align-items:center;gap:20px;border:1.5px solid #2b2b2b;
+    border-radius:6px;padding:14px 18px;margin:20px 0;
+  }
+  .doc-cf .valor{font-size:30px;font-weight:800}
+  .doc-cf .cat{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+  .doc-cf .ref{font-size:11px;color:#666;margin-left:auto;max-width:230px;text-align:right}
+
+  .doc-retro{margin-bottom:22px}
+  .doc-retro > .titulo{
+    font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#777;
+    border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:12px;
+  }
+  .retro-area{margin-bottom:18px;page-break-inside:avoid}
+  .retro-area .area-nombre{
+    font-size:13px;font-weight:700;margin-bottom:8px;
+    background:#f2f2f2;padding:5px 9px;border-radius:4px;
+  }
+  .retro-area .area-nombre .n{font-weight:400;color:#666;font-size:11.5px}
+  .retro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .retro-card{border:1px solid #ddd;border-radius:5px;padding:8px 10px;background:#fcfcfc}
+  .retro-card .autor{
+    font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+    color:#666;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid #e2e2e2;
+  }
+  .retro-card .texto{font-size:11.5px;color:#333;line-height:1.5}
+  .retro-vacia{font-size:11.5px;color:#999;font-style:italic;padding:2px 9px}
+
+  .doc-firmas{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px}
+  .doc-firma{font-size:11.5px;text-align:center}
+  .doc-firma .linea{border-top:1px solid #2b2b2b;margin-top:34px;padding-top:6px}
+  .doc-firma .nombre{font-weight:700}
+  .doc-firma .rol{color:#777;font-size:10.5px}
+  .doc-firma .estado{margin-top:4px;font-size:10.5px}
+  .doc-firma .estado.ok{color:#15803D;font-weight:700}
+  .doc-firma .estado.pend{color:#B45309}
+
+  .doc-footer{
+    margin-top:28px;padding-top:10px;border-top:1px solid #ccc;
+    display:flex;justify-content:space-between;font-size:10px;color:#888;
+  }
+
+  /* ========== Control de firma (fuera del documento) ========== */
+  .panel-firma-control{margin-top:24px}
+  .panel-firma-control h3{font-size:14px;font-weight:700;margin:0 0 14px;color:var(--gray-900)}
+  .firma-fila{
+    display:flex;align-items:center;gap:14px;
+    padding:12px 14px;border:1px solid var(--gray-200);border-radius:8px;margin-bottom:10px;
+    background:#fff;
+  }
+  .firma-fila .info{flex:1}
+  .firma-fila .info .n{font-weight:700;font-size:13px}
+  .firma-fila .info .e{font-size:11px;color:var(--neutral-light)}
+  .chk-firmar{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;cursor:pointer;user-select:none}
+  .chk-firmar input{width:17px;height:17px;cursor:pointer}
+  .firma-fila.firmada{border-color:var(--success);background:#F0FDF4}
+
+  /* ========== Impresión ========== */
+  @media print{
+    .header,.barra-pasos,.seccion-carga,#paso1,.no-imprimir{display:none !important}
+    body{background:#fff}
+    .contenedor{max-width:none;padding:0;margin:0}
+    #hoja-informe{border:none;padding:0;max-width:none}
+  }
 
   /* ========== Responsive ========== */
   @media (max-width:1200px){
     .evaluaciones-grid{grid-template-columns:1fr}
-    .firmas-grid{grid-template-columns:1fr}
+    .doc-firmas,.retro-grid{grid-template-columns:1fr}
     .cf-preview{grid-template-columns:1fr}
   }
   @media (max-width:768px){
@@ -559,9 +628,6 @@
 <!-- ========== Header ========== -->
 <div class="header">
   <div class="header-logo">📋 Panel de Deliberación</div>
-  <div class="header-right">
-    <button class="btn-descargar" id="btn-descargar" disabled>Descargar Resultado (PDF)</button>
-  </div>
 </div>
 
 <!-- ========== Contenedor ========== -->
@@ -584,89 +650,139 @@
   <!-- Panel de Deliberación (oculto hasta cargar datos) -->
   <div class="panel-deliberacion oculto" id="panel-deliberacion">
 
-    <h1 style="font-size:24px;margin:0 0 8px;color:#1F2937">Deliberación de la Comisión</h1>
-    <p style="margin:0 0 24px;color:var(--neutral);font-size:14px">
-      Revisen lado a lado las 3 evaluaciones. Por cada área, discutan y decidan el nivel final.
-    </p>
-
-    <!-- Información del Académico -->
-    <div class="info-academico">
-      <div class="campo"><span class="label">Académico:</span><span class="valor" id="info-nombre">—</span></div>
-      <div class="campo"><span class="label">Unidad:</span><span class="valor" id="info-unidad">—</span></div>
-      <div class="campo"><span class="label">Jerarquía:</span><span class="valor" id="info-jerarquia">—</span></div>
-      <div class="campo"><span class="label">Jornada:</span><span class="valor" id="info-jornada">—</span></div>
+    <!-- Barra de pasos -->
+    <div class="barra-pasos">
+      <div class="paso-item activo" id="paso-ind-1"><div class="bola">1</div><span>Deliberación</span></div>
+      <div class="paso-linea" id="linea-pasos"></div>
+      <div class="paso-item" id="paso-ind-2"><div class="bola">2</div><span>Informe final y firma</span></div>
     </div>
 
-    <!-- Cuadro Resumen por Área -->
-    <div class="resumen-comision">
-      <div class="resumen-titulo">
-        <span>Resumen de evaluaciones de la comisión</span>
-        <span class="resumen-progreso" id="resumen-progreso">0/7 áreas decididas</span>
+    <!-- ============ PASO 1: Deliberación ============ -->
+    <div id="paso1">
+
+      <h1 style="font-size:24px;margin:0 0 8px;color:#1F2937">Deliberación de la Comisión</h1>
+      <p style="margin:0 0 24px;color:var(--neutral);font-size:14px">
+        Revisen lado a lado las 3 evaluaciones. Por cada área, discutan y decidan el nivel final.
+      </p>
+
+      <!-- Información del Académico -->
+      <div class="info-academico">
+        <div class="campo"><span class="label">Académico:</span><span class="valor" id="info-nombre">—</span></div>
+        <div class="campo"><span class="label">Unidad:</span><span class="valor" id="info-unidad">—</span></div>
+        <div class="campo"><span class="label">Jerarquía:</span><span class="valor" id="info-jerarquia">—</span></div>
+        <div class="campo"><span class="label">Jornada:</span><span class="valor" id="info-jornada">—</span></div>
       </div>
-      <div class="resumen-tabla-wrap">
-        <table class="resumen-tabla">
+
+      <!-- Cuadro Resumen por Área -->
+      <div class="resumen-comision">
+        <div class="resumen-titulo">
+          <span>Resumen de evaluaciones de la comisión</span>
+          <span class="resumen-progreso" id="resumen-progreso">0/7 áreas decididas</span>
+        </div>
+        <div class="resumen-tabla-wrap">
+          <table class="resumen-tabla">
+            <thead>
+              <tr>
+                <th>Área</th>
+                <th id="resumen-th-1">Comisionado 1</th>
+                <th id="resumen-th-2">Comisionado 2</th>
+                <th id="resumen-th-3">Comisionado 3</th>
+                <th>Divergencia</th>
+                <th>Acordado</th>
+              </tr>
+            </thead>
+            <tbody id="resumen-tbody"></tbody>
+          </table>
+        </div>
+        <div class="nota-excluidas oculto" id="nota-excluidas"></div>
+      </div>
+
+      <!-- Áreas de Deliberación (se genera dinámicamente) -->
+      <div id="areas-contenedor"></div>
+
+      <!-- CF Preview -->
+      <div class="cf-preview">
+        <div>
+          <div class="cf-numero" id="cf-final">—</div>
+          <div class="cf-cat" id="cf-cat-preview"></div>
+          <div style="font-size:11px;color:var(--neutral-light)" id="cf-estado"></div>
+        </div>
+        <div class="cf-texto">
+          Suma ponderada de los niveles acordados por la comisión, usando las horas comprometidas (Art. 35).
+          <br><b>Esta es la calificación final.</b>
+        </div>
+      </div>
+
+      <div class="botones-finales">
+        <button class="btn-primario" id="btn-ir-informe">Continuar al informe final →</button>
+      </div>
+
+    </div>
+
+    <!-- ============ PASO 2: Informe final y firma ============ -->
+    <div class="oculto" id="paso2">
+
+      <div class="aviso-bloqueo no-imprimir" id="aviso-bloqueo">
+        Este documento se genera automáticamente a partir de los niveles acordados en la deliberación. Revíselo y, si está correcto, cada comisionado debe firmar abajo para poder finalizar la evaluación.
+      </div>
+      <div class="aviso-final oculto" id="aviso-final">
+        ✓ Evaluación finalizada y firmada por la comisión completa. El informe ya no puede modificarse.
+      </div>
+
+      <!-- Documento imprimible -->
+      <div id="hoja-informe">
+        <div class="doc-header">
+          <div class="doc-inst">Universidad de Santiago de Chile — Facultad de Ingeniería</div>
+          <div class="doc-titulo">Informe Final de Evaluación de Desempeño Académico</div>
+          <div class="doc-sub" id="doc-periodo">Convenio de Desempeño Académico</div>
+        </div>
+
+        <div class="doc-datos">
+          <div><span>Académico(a)</span><span id="doc-nombre">—</span></div>
+          <div><span>Unidad</span><span id="doc-unidad">—</span></div>
+          <div><span>Jerarquía académica</span><span id="doc-jerarquia">—</span></div>
+          <div><span>Jornada contractual</span><span id="doc-jornada">—</span></div>
+        </div>
+
+        <table class="doc-tabla">
           <thead>
             <tr>
               <th>Área</th>
-              <th id="resumen-th-1">Comisionado 1</th>
-              <th id="resumen-th-2">Comisionado 2</th>
-              <th id="resumen-th-3">Comisionado 3</th>
-              <th>Divergencia</th>
-              <th>Acordado</th>
+              <th class="num">Ponderación</th>
+              <th class="num">Nivel acordado</th>
+              <th>Categoría</th>
             </tr>
           </thead>
-          <tbody id="resumen-tbody"></tbody>
+          <tbody id="tbody-doc-areas"></tbody>
         </table>
-      </div>
-      <div class="nota-excluidas oculto" id="nota-excluidas"></div>
-    </div>
 
-    <!-- Áreas de Deliberación (se genera dinámicamente) -->
-    <div id="areas-contenedor"></div>
-
-    <!-- CF Preview -->
-    <div class="cf-preview">
-      <div>
-        <div class="cf-numero" id="cf-final">—</div>
-        <div style="font-size:11px;color:var(--neutral-light)" id="cf-estado"></div>
-      </div>
-      <div class="cf-texto">
-        Suma ponderada de los niveles acordados por la comisión, usando las horas comprometidas (Art. 35).
-        <br><b>Esta es la calificación final.</b>
-      </div>
-    </div>
-
-    <!-- Panel de Firmas -->
-    <div class="panel-firmas">
-      <h3>Firma de la comisión — constancia de deliberación (Art. 52, Título IX)</h3>
-      <div class="firmas-grid">
-        <div class="firma-campo">
-          <div class="firma-label">Comisionado 1</div>
-          <input type="text" class="firma-input" id="firma-1-nombre" placeholder="Nombre completo">
-          <input type="text" class="firma-input" id="firma-1-email" placeholder="correo@usach.cl">
-          <div class="firma-linea">Firma: ____________________</div>
-          <div style="font-size:10px;color:var(--neutral-light);margin-top:4px" id="firma-1-hora"></div>
+        <div class="doc-cf">
+          <div class="valor" id="doc-cf-valor">—</div>
+          <div class="cat" id="doc-cf-cat"></div>
+          <div class="ref">Calificación Final según escala del Art. 35 del Manual de Evaluación de Desempeño Académico.</div>
         </div>
-        <div class="firma-campo">
-          <div class="firma-label">Comisionado 2</div>
-          <input type="text" class="firma-input" id="firma-2-nombre" placeholder="Nombre completo">
-          <input type="text" class="firma-input" id="firma-2-email" placeholder="correo@usach.cl">
-          <div class="firma-linea">Firma: ____________________</div>
-          <div style="font-size:10px;color:var(--neutral-light);margin-top:4px" id="firma-2-hora"></div>
-        </div>
-        <div class="firma-campo">
-          <div class="firma-label">Comisionado 3</div>
-          <input type="text" class="firma-input" id="firma-3-nombre" placeholder="Nombre completo">
-          <input type="text" class="firma-input" id="firma-3-email" placeholder="correo@usach.cl">
-          <div class="firma-linea">Firma: ____________________</div>
-          <div style="font-size:10px;color:var(--neutral-light);margin-top:4px" id="firma-3-hora"></div>
+
+        <div class="doc-retro" id="doc-retro"></div>
+
+        <div class="doc-firmas" id="doc-firmas"></div>
+
+        <div class="doc-footer">
+          <span>Documento generado por el Panel de Deliberación</span>
+          <span id="doc-fecha"></span>
         </div>
       </div>
-    </div>
 
-    <!-- Botones Finales -->
-    <div class="botones-finales">
-      <button class="btn-primario" id="btn-generar-resultado">Generar y descargar resultado</button>
+      <!-- Control de firma (no se imprime) -->
+      <div class="panel-firma-control no-imprimir" id="panel-firma-control">
+        <h3>Firma de la comisión — constancia de deliberación (Art. 52, Título IX)</h3>
+        <div id="firmas-control-cont"></div>
+      </div>
+
+      <div class="botones-finales no-imprimir">
+        <button class="btn-secundario" id="btn-volver">← Volver a deliberación</button>
+        <button class="btn-primario" id="btn-finalizar" disabled>Finalizar evaluación y exportar PDF</button>
+      </div>
+
     </div>
 
   </div>
@@ -697,6 +813,16 @@ const RUBRICA = [
   {n:3, cat:"Bueno", desc:"Cumple plenamente lo esperado para la jerarquía."},
   {n:4, cat:"Sobresaliente", desc:"Supera de manera verificable lo esperado."}
 ];
+
+// Mismos rangos de CF_RANGOS que sistema_evaluacion_maqueta_v2.html (Art. 35).
+const CF_RANGOS = [
+  {min:3.70, max:4.00, cat:"Sobresaliente"},
+  {min:2.80, max:3.69, cat:"Bueno"},
+  {min:2.00, max:2.79, cat:"Aceptable"},
+  {min:1.50, max:1.99, cat:"Condicional"},
+  {min:0.00, max:1.49, cat:"Insuficiente"}
+];
+function categoriaCF(v){ return CF_RANGOS.find(r=> v>=r.min && v<=r.max) || null; }
 
 let datosCargados = null;
 let deliberaciones = {}; // {area: {nivel, notas}}
@@ -849,18 +975,7 @@ function renderizarPanelDeliberacion(){
     contenedor.innerHTML += html;
   });
 
-  // Inicializar firmas con nombres
-  datosCargados.evaluaciones.forEach((e, i)=>{
-    const num = i + 1;
-    document.getElementById(`firma-${num}-nombre`).value = e.comisionado.nombre;
-    document.getElementById(`firma-${num}-email`).value = e.comisionado.correo;
-    document.getElementById(`firma-${num}-hora`).textContent = e.timestamp ? new Date(e.timestamp).toLocaleString("es-CL") : "";
-  });
-
   renderizarResumen();
-
-  // Habilitar botón descargar
-  document.getElementById("btn-descargar").disabled = false;
 }
 
 /* ---- Cuadro Resumen por Área ---- */
@@ -952,28 +1067,164 @@ function calcularCF(){
   const cf = hechas ? suma.toFixed(2) : "—";
   document.getElementById("cf-final").textContent = cf;
   document.getElementById("cf-estado").textContent = hechas === AREAS.length ? "Cálculo completo" : `Cálculo parcial: ${hechas}/${AREAS.length} áreas`;
+
+  const cat = hechas === AREAS.length ? categoriaCF(parseFloat(cf)) : null;
+  document.getElementById("cf-cat-preview").textContent = cat ? cat.cat : "";
 }
 
-document.getElementById("btn-generar-resultado").onclick = ()=>{
-  // Validar que evaluó todas las áreas
+/* ========================================================================
+   PASO 2 — Informe final y firma
+   ======================================================================== */
+let firmado = {};
+
+document.getElementById("btn-ir-informe").onclick = ()=>{
   const sinEvaluar = AREAS.filter(a=> deliberaciones[a].nivel === null);
   if(sinEvaluar.length > 0){
     alert(`Falta evaluar: ${sinEvaluar.join(", ")}`);
     return;
   }
 
-  // Descargar resultado como JSON
+  renderInformeFinal();
+
+  document.getElementById("paso1").classList.add("oculto");
+  document.getElementById("paso2").classList.remove("oculto");
+  document.getElementById("paso-ind-1").classList.remove("activo");
+  document.getElementById("paso-ind-1").classList.add("hecho");
+  document.getElementById("paso-ind-1").querySelector(".bola").textContent = "✓";
+  document.getElementById("linea-pasos").classList.add("hecho");
+  document.getElementById("paso-ind-2").classList.add("activo");
+  window.scrollTo({top:0, behavior:"smooth"});
+};
+
+document.getElementById("btn-volver").onclick = ()=>{
+  document.getElementById("paso2").classList.add("oculto");
+  document.getElementById("paso1").classList.remove("oculto");
+  document.getElementById("paso-ind-2").classList.remove("activo");
+  document.getElementById("paso-ind-1").classList.add("activo");
+  document.getElementById("paso-ind-1").classList.remove("hecho");
+  document.getElementById("paso-ind-1").querySelector(".bola").textContent = "1";
+  document.getElementById("linea-pasos").classList.remove("hecho");
+  window.scrollTo({top:0, behavior:"smooth"});
+};
+
+function renderInformeFinal(){
+  const ac = datosCargados.academico;
+  document.getElementById("doc-nombre").textContent = ac.nombre || "—";
+  document.getElementById("doc-unidad").textContent = ac.unidad || "—";
+  document.getElementById("doc-jerarquia").textContent = ac.jerarquia || "—";
+  document.getElementById("doc-jornada").textContent = ac.jornada ? `${ac.jornada} horas semanales` : "—";
+  document.getElementById("doc-periodo").textContent = `Convenio de Desempeño Académico — Período ${ac.periodo || "—"}`;
+
+  const horasObj = ac.areas_horas || {};
+  const tbody = document.getElementById("tbody-doc-areas");
+  tbody.innerHTML = "";
+  AREAS.forEach(area=>{
+    const n = deliberaciones[area].nivel;
+    const cat = RUBRICA[n].cat;
+    const pond = horasObj[area] ?? "—";
+    tbody.innerHTML += `<tr><td>${area}</td><td class="num">${pond} h</td><td class="num">${n}</td><td>${cat}</td></tr>`;
+  });
+  areasExcluidas.forEach(area=>{
+    tbody.innerHTML += `<tr class="excluida"><td>${area}</td><td class="num">—</td><td class="num">—</td><td>No aplica (comprometida, sin ejecución en el período)</td></tr>`;
+  });
+
+  const cf = parseFloat(document.getElementById("cf-final").textContent);
+  const cat = categoriaCF(cf);
+  document.getElementById("doc-cf-valor").textContent = cf.toFixed(2);
+  document.getElementById("doc-cf-cat").textContent = cat ? cat.cat : "";
+
+  document.getElementById("doc-fecha").textContent = "Fecha de emisión: " + new Date().toLocaleDateString("es-CL", {year:"numeric", month:"long", day:"numeric"});
+
+  renderRetroalimentacion();
+  renderFirmasControl();
+  renderFirmasDocumento();
+}
+
+function renderRetroalimentacion(){
+  const cont = document.getElementById("doc-retro");
+  let html = `<div class="titulo">Retroalimentación de la comisión, por área</div>`;
+
+  AREAS.forEach(area=>{
+    const n = deliberaciones[area].nivel;
+    const cat = RUBRICA[n].cat;
+    html += `<div class="retro-area">
+      <div class="area-nombre">${area} <span class="n">— Nivel acordado: ${n} (${cat})</span></div>
+      <div class="retro-grid">`;
+    datosCargados.evaluaciones.forEach(e=>{
+      const d = datosArea(e, area);
+      const texto = d?.retroalimentacion || "Sin retroalimentación registrada.";
+      html += `<div class="retro-card"><div class="autor">${e.comisionado.nombre}</div><div class="texto">${texto}</div></div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  areasExcluidas.forEach(area=>{
+    html += `<div class="retro-area">
+      <div class="area-nombre">${area} <span class="n">— No aplica</span></div>
+      <div class="retro-vacia">Actividad comprometida sin ejecución en el período: no se evalúa ni se retroalimenta.</div>
+    </div>`;
+  });
+
+  cont.innerHTML = html;
+}
+
+function renderFirmasControl(){
+  firmado = {};
+  const cont = document.getElementById("firmas-control-cont");
+  cont.innerHTML = datosCargados.evaluaciones.map((e, i)=>{
+    const num = i + 1;
+    firmado[num] = false;
+    return `
+      <div class="firma-fila" id="firma-fila-${num}">
+        <div class="info">
+          <div class="n">${e.comisionado.nombre}</div>
+          <div class="e">${e.comisionado.correo || ""} · Comisionado ${num}</div>
+        </div>
+        <label class="chk-firmar"><input type="checkbox" class="chk" data-com="${num}"> He revisado y firmo este informe</label>
+      </div>`;
+  }).join("");
+
+  cont.querySelectorAll(".chk").forEach(chk=>{
+    chk.addEventListener("change", ()=>{
+      const com = chk.dataset.com;
+      firmado[com] = chk.checked;
+      document.getElementById(`firma-fila-${com}`).classList.toggle("firmada", chk.checked);
+      renderFirmasDocumento();
+      const todasFirmadas = Object.values(firmado).every(v=>v);
+      document.getElementById("btn-finalizar").disabled = !todasFirmadas;
+    });
+  });
+
+  document.getElementById("btn-finalizar").disabled = true;
+}
+
+function renderFirmasDocumento(){
+  const cont = document.getElementById("doc-firmas");
+  cont.innerHTML = datosCargados.evaluaciones.map((e, i)=>{
+    const num = i + 1;
+    const ok = firmado[num];
+    return `
+      <div class="doc-firma">
+        <div class="linea">
+          <div class="nombre">${e.comisionado.nombre}</div>
+          <div class="rol">Comisionado ${num}</div>
+          <div class="estado ${ok ? "ok" : "pend"}">${ok ? "Firmado" : "Firma pendiente"}</div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+document.getElementById("btn-finalizar").onclick = ()=>{
   const resultado = {
     timestamp: new Date().toISOString(),
     academico: datosCargados.academico,
     deliberaciones: deliberaciones,
-    cf_final: parseFloat(document.getElementById("cf-final").textContent),
-    firmas: {
-      comisionado1: {nombre: document.getElementById("firma-1-nombre").value, email: document.getElementById("firma-1-email").value},
-      comisionado2: {nombre: document.getElementById("firma-2-nombre").value, email: document.getElementById("firma-2-email").value},
-      comisionado3: {nombre: document.getElementById("firma-3-nombre").value, email: document.getElementById("firma-3-email").value}
-    }
+    cf_final: parseFloat(document.getElementById("doc-cf-valor").textContent),
+    firmas: {}
   };
+  datosCargados.evaluaciones.forEach((e, i)=>{
+    resultado.firmas[`comisionado${i+1}`] = {nombre: e.comisionado.nombre, email: e.comisionado.correo};
+  });
 
   const blob = new Blob([JSON.stringify(resultado, null, 2)], {type: "application/json"});
   const url = URL.createObjectURL(blob);
@@ -983,7 +1234,14 @@ document.getElementById("btn-generar-resultado").onclick = ()=>{
   a.click();
   URL.revokeObjectURL(url);
 
-  alert("✓ Resultado descargado. Próximo paso: compartir con Secretaría Técnica para integración en expediente.");
+  document.getElementById("aviso-bloqueo").classList.add("oculto");
+  document.getElementById("aviso-final").classList.remove("oculto");
+  document.getElementById("panel-firma-control").classList.add("oculto");
+  document.getElementById("btn-volver").disabled = true;
+  document.getElementById("btn-finalizar").disabled = true;
+  document.getElementById("btn-finalizar").textContent = "Evaluación finalizada";
+
+  window.print();
 };
 </script>
 </body>
