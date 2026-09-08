@@ -52,7 +52,14 @@ function doPost(e) {
 // ========================================================================
 function construirFila(payload) {
   const com = payload.comisionado;
-  const evals = payload.evaluaciones.areas;
+
+  // El académico puede no haber ejecutado alguna actividad comprometida:
+  // en ese caso el sistema de evaluación excluye esa área del envío, y
+  // "evals" llega con menos de 7 elementos. Se indexa por nombre (no por
+  // posición) para que cada área siempre caiga en su columna fija del
+  // encabezado, dejando en blanco la que no fue evaluada.
+  const evalsPorNombre = {};
+  payload.evaluaciones.areas.forEach(a => { evalsPorNombre[a.nombre] = a; });
 
   // Encabezado base: Timestamp, Comisionado, Email, Unidad, Tipo, Calidad
   const fila = [
@@ -64,11 +71,14 @@ function construirFila(payload) {
     com.calidad
   ];
 
-  // Agregar nivel + fundamento para cada área (7 áreas × 2 columnas = 14)
-  evals.forEach(area => {
-    fila.push(area.nivel);           // Nivel (0-4)
-    fila.push(area.fundamento);      // Fundamento texto
-    fila.push(area.retroalimentacion); // Retroalimentación
+  // Agregar nivel + fundamento + retroalimentación para cada una de las 7
+  // áreas, en el orden fijo de AREAS_ORDEN (columnas siempre alineadas
+  // con el encabezado, aunque falte alguna área en el envío).
+  AREAS_ORDEN.forEach(nombreArea => {
+    const area = evalsPorNombre[nombreArea];
+    fila.push(area ? area.nivel : "");
+    fila.push(area ? area.fundamento : "");
+    fila.push(area ? area.retroalimentacion : "");
   });
 
   // Tiempo total y checks
