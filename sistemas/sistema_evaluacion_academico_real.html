@@ -893,7 +893,7 @@
     <div class="header-logo">📊 Sistema de Evaluación</div>
     <div class="header-usuario">
       <div class="nombre">Comisión de Evaluación</div>
-      <div class="rol">Período 2026</div>
+      <div class="rol">Período 2024</div>
     </div>
   </div>
   <div class="header-right">
@@ -914,8 +914,8 @@
 
   <!-- ================= PASO 0: IDENTIFICACIÓN ================= -->
   <div class="tarjeta paso-c" data-c="0">
-    <h1>Caso asignado: Nombre Apellido Apellido</h1>
-    <p class="sub">Depto. de Ingeniería Industrial · Profesor Asociado · Período evaluativo 2026</p>
+    <h1>Caso asignado: Mohammadhosein Sabzalian</h1>
+    <p class="sub">Depto. de Ingeniería Mecánica · Profesor Asistente · Período evaluativo 2024</p>
 
     <h2>Identificación del integrante de la comisión</h2>
     <div class="grid2">
@@ -996,12 +996,12 @@
 
     <h2>Identificación del académico</h2>
     <div class="identificacion">
-      <div class="campo"><div class="et">Académico o académica</div><div class="va">Nombre Apellido Apellido</div></div>
-      <div class="campo"><div class="et">Unidad académica</div><div class="va">Depto. de Ingeniería Industrial</div></div>
-      <div class="campo"><div class="et">Jerarquía</div><div class="va">Profesor Asociado</div></div>
+      <div class="campo"><div class="et">Académico o académica</div><div class="va">Mohammadhosein Sabzalian</div></div>
+      <div class="campo"><div class="et">Unidad académica</div><div class="va">Depto. de Ingeniería Mecánica</div></div>
+      <div class="campo"><div class="et">Jerarquía</div><div class="va">Profesor Asistente</div></div>
       <div class="campo"><div class="et">Jornada contractual</div><div class="va">44 h semanales</div></div>
-      <div class="campo"><div class="et">CDA de referencia</div><div class="va">v1.0 · 12-03-2026</div></div>
-      <div class="campo"><div class="et">Período informado</div><div class="va">2026</div></div>
+      <div class="campo"><div class="et">CDA de referencia</div><div class="va">Pendiente</div></div>
+      <div class="campo"><div class="et">Período informado</div><div class="va">2024</div></div>
     </div>
 
     <div class="reservada">
@@ -1210,64 +1210,89 @@
    CONFIGURACIÓN Y DATOS DE EJEMPLO (no anonimizados: reemplazar por el caso real)
    ========================================================================= */
 const JORNADA = 44;
-const JERARQUIA = "Profesor Asociado";
+const JERARQUIA = "Profesor Asistente";
 
 /* Secretaría Técnica: pegue aquí, una sola vez, la URL de despliegue del
    Google Apps Script (ver apps_script_deliberacion.gs) antes de compartir
    este archivo con los comisionados. Ellos no necesitan verla ni tocarla. */
 const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVR1WMVIr40pYaVSvPb324s_v0ZzHyZiK1qlPiRTXtDrCkHac6OIkKzUMLNMYBHLfeTQ/exec";
 
+/* Caso real: Mohammadhosein Sabzalian, Depto. de Ingeniería Mecánica,
+   Profesor Asistente, período 2024. Transcrito desde el Convenio de
+   Desempeño real de la Facultad (planilla "Convenio Desempeño"), usando
+   los nombres de actividad del catálogo oficial de 133 actividades.
+
+   hc/hr por área y por actividad calculados con la fórmula institucional
+   ya presente en el Excel (columna "HORAS EQ. SEMANALES REALIZADAS" y
+   fila "HORAS SEMANALES EQUIVALENTES"): horas_semana_equivalente =
+   (horas/año + horas/semana_promedio × 36) / 44. Verificada contra los
+   totales que el propio archivo ya trae calculados.
+
+   Evidencias pendientes: la planilla real no registra evidencia documental
+   formal por actividad (solo observaciones libres). Marcadas como
+   "Pendiente" hasta que se incorporen los documentos de respaldo.
+
+   Guía orientadora: no incluida todavía (guia:null) porque el texto de
+   Anexo II/III disponible está redactado para la jerarquía de Profesor
+   Asociado, no para Profesor Asistente — se agrega cuando se cuente con
+   el texto correcto para esta jerarquía. */
 const AREAS = [
- {area:"Docencia", hc:14, hr:15,
+ {area:"Docencia", hc:18.5, hr:23.0,
   compromisos:[
-   {act:"Dictación de asignatura de pregrado", res:"Sección dictada y cerrada. 78 estudiantes, 71 aprobados. Se incorporó evaluación por proyecto.",
-    ev:["PDF · Actas de notas","XLSX · Planeación docente"], est:"cumplido", hc:10, hr:11},
-   {act:"Dirección de memoria o proyecto de título", res:"Dos memorias dirigidas y aprobadas con distinción.",
-    ev:["PDF · Actas de examen (2)"], est:"cumplido", hc:4, hr:4}
+   {act:"Docencia directa frente a alumnos (N° créditos T-E)",
+    res:"Docencia realizada en ICM (12 h primer semestre) y Magíster (4 h primer semestre, 5 h segundo semestre).",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:9.8, hr:14.3},
+   {act:"Preparación de clases", res:"Actividad recurrente asociada a la docencia directa comprometida.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:3.3, hr:3.3},
+   {act:"Preparación de pruebas", res:"Actividad recurrente asociada a la evaluación de los cursos dictados.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:0.3, hr:0.3},
+   {act:"Preparación guías de ejercicios", res:"Actividad recurrente asociada a la docencia comprometida.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:0.2, hr:0.2},
+   {act:"Preparación de apuntes", res:"Incluye preparación de codificación en Matlab para proyectos de asignatura.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:0.7, hr:0.7},
+   {act:"Corrección de informes y trabajos", res:"Actividad recurrente asociada a la evaluación de los cursos dictados.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:0.4, hr:0.4},
+   {act:"Atención de alumnos por internet", res:"Atención mediante grupo de WhatsApp y correo electrónico.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:0.3, hr:0.3},
+   {act:"Atención personalizada de alumnos", res:"Actividad recurrente asociada a la docencia comprometida.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:3.3, hr:3.3},
+   {act:"Otras actividades", res:"Elaboración de programas de asignatura.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:0.4, hr:0.4}
   ],
-  guia:{fuente:"Anexo II · Guía Orientadora de Actividades y Evidencias en Docencia — 7. Profesor Asociado, Área Docencia",
-   perfil:"El Profesor Asociado debe evidenciar autonomía, creatividad y capacidad de conducción en el desarrollo de actividades docentes. Su desempeño se espera más consolidado que el del Profesor Asistente, aunque no necesariamente con el mismo nivel de liderazgo institucional amplio exigible a un Profesor Titular.",
-   normativo:"El Decreto 26 señala que al Profesor Asociado le corresponde conducir y/o ejecutar actividades académicas. En docencia, considera dictar asignaturas, dictar cursos de postgrado y postítulo, elaborar material docente, guiar tesis o trabajos de titulación, y dirigir o colaborar en la elaboración de planes y programas de estudio.",
-   actividades:"Docencia directa frente a alumnos en pregrado, postgrado o cursos de especialidad; preparación de clases, pruebas, controles, guías y apuntes; corrección de pruebas y trabajos; atención personalizada de estudiantes y tutorías; guía de memorias de título y supervisión de prácticas."}},
- {area:"Investigación y desarrollo", hc:10, hr:12,
+  guia:null},
+ {area:"Investigación y desarrollo", hc:25.4, hr:31.1,
   compromisos:[
-   {act:"Ejecución de proyecto Fondecyt Regular", res:"Informe de avance aprobado por ANID. Un artículo aceptado en revista WoS Q2.",
-    ev:["PDF · Informe ANID aprobado","PDF · Carta de aceptación"], est:"cumplido", hc:8, hr:9},
-   {act:"Codirección de tesis doctoral", res:"Avance presentado y aprobado por el comité del programa.",
-    ev:["PDF · Acta de comité"], est:"cumplido", hc:2, hr:3}
+   {act:"Elaboración de proyectos de investigación y desarrollo", res:"Incluye postulación a fondos Fondecyt y FONDEF.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:7.4, hr:9.8},
+   {act:"Proyectos de investigación o desarrollo de interés departamental", res:"DICYT Regular y DICYT Postdoctorado.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:3.3, hr:3.3},
+   {act:"Gestión administrativa y desarrollo de proyectos", res:"DICYT Regular.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:1.6, hr:1.6},
+   {act:"Elaboración de productos de los proyectos de investigación", res:"Proyecto PEZ ROBOT.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:1.6, hr:1.6},
+   {act:"Guías de memorias de título (2 hr./semana/tema)", res:"Estudiantes de Magíster.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:3.3, hr:3.3},
+   {act:"Otras actividades", res:"Publicaciones derivadas del trabajo de investigación.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:3.3, hr:4.9},
+   {act:"Otras actividades", res:"Capítulo de libro.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:3.3, hr:4.9},
+   {act:"Otras actividades", res:"Implementación y montaje de laboratorio de Complex Dynamics Systems and Control.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:1.6, hr:1.6}
   ],
-  guia:{fuente:"Anexo III · Guía Orientadora de Actividades y Evidencias en Investigación y Desarrollo — B. Profesor Asociado, Área Investigación y Desarrollo",
-   perfil:"El Profesor Asociado debe evidenciar autonomía, creatividad y dominio disciplinar en investigación y desarrollo. Se espera que conduzca o ejecute trabajos de investigación, participe en la dirección de líneas o grupos, produzca resultados comunicables y colabore en la formación de nuevos investigadores.",
-   normativo:"El Decreto 26 asigna al Profesor Asociado funciones como realizar trabajos de investigación, dirigir líneas y grupos, colaborar en la formación de nuevos investigadores, publicar en revistas especializadas de prestigio nacional y presentar trabajos en congresos.",
-   actividades:"Formulación o coformulación de proyectos (ANID, CORFO, DICYT-VRIIC, FIU-VRIIC, GORE, entre otros); ejecución como responsable, coinvestigador o colaborador principal; producción académica sistemática (artículos, libros, capítulos); participación en resultados aplicados o transferencia; organización de encuentros científico-tecnológicos."}},
- {area:"Extensión - VIME", hc:4, hr:2,
+  guia:null},
+ {area:"Administración académica", hc:0.3, hr:0.3,
   compromisos:[
-   {act:"Curso de actualización para el sector productivo", res:"Ejecutado a mitad de programa; la contraparte postergó el resto a marzo de 2027. Convenio vigente.",
-    ev:["PDF · Carta de postergación"], est:"parcial", hc:4, hr:2}
+   {act:"Consejo Departamental", res:"Participación en sesión de Consejo Departamental, un miércoles al mes por 1,5 horas cada vez.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:0.3, hr:0.3}
   ], guia:null},
- {area:"Extensión - Educación continua", hc:3, hr:3,
+ {area:"Perfeccionamiento", hc:0.3, hr:0.3,
   compromisos:[
-   {act:"Diseño y dictación de módulo de educación continua", res:"Módulo diseñado y dictado a profesionales del área, con evaluación de participantes.",
-    ev:["PDF · Programa y nómina"], est:"cumplido", hc:3, hr:3}
-  ], guia:null},
- {area:"Asistencia técnica", hc:3, hr:0,
-  compromisos:[
-   {act:"Asesoría técnica a empresa del sector", res:"No ejecutada en el período. La contraparte reprogramó el inicio para el próximo período.",
-    ev:["PDF · Comunicación de reprogramación"], est:"repro", hc:3, hr:0}
-  ], guia:null},
- {area:"Administración académica", hc:7, hr:9,
-  compromisos:[
-   {act:"Coordinación de comité curricular", res:"Propuesta presentada y aprobada por el Consejo de Facultad. Nueve sesiones de comité.",
-    ev:["PDF · Actas del comité","PDF · Acuerdo de Consejo"], est:"cumplido", hc:7, hr:9}
-  ], guia:null},
- {area:"Perfeccionamiento", hc:3, hr:4,
-  compromisos:[
-   {act:"Diplomado en docencia universitaria", res:"Diplomado cursado y aprobado con nota 6,4.",
-    ev:["PDF · Certificado de aprobación"], est:"cumplido", hc:3, hr:4}
+   {act:"Curso de capacitación", res:"Curso de capacitación cursado y acreditado durante el primer semestre.",
+    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:0.3, hr:0.3}
   ], guia:null}
 ];
 
-const CIRCUNSTANCIAS_DECLARADAS = ["Inicio de carrera tras el grado"];
+const CIRCUNSTANCIAS_DECLARADAS = [];
 
 const RUBRICA = [
  {n:0, cat:"Insuficiente", d:"El desempeño no permite reconocer el cumplimiento mínimo de los compromisos establecidos en el CDA ni de las funciones esperadas para la jerarquía académica, la jornada contractual o el área evaluada. Corresponde asignar este nivel cuando las actividades centrales no fueron realizadas, no cuentan con respaldo verificable, presentan incumplimientos críticos, muestran una desconexión sustantiva con el área evaluada o la jerarquía académica, o existen antecedentes comprobados de abandono de responsabilidades, incumplimiento reiterado o falta grave asociada a la actividad evaluada."},
@@ -1371,7 +1396,7 @@ function renderResumen(){
   cuerpo.innerHTML = AREAS.map(a=>
     `<tr><td>${esc(a.area)}</td><td class="num">${a.hc} h</td><td class="num">${pct(a.hc)}%</td>
       <td class="num">${a.hr} h</td><td class="num">${pct(a.hr)}%</td></tr>`).join("");
-  const thc = AREAS.reduce((s,a)=>s+a.hc,0), thr = AREAS.reduce((s,a)=>s+a.hr,0);
+  const thc = Math.round(AREAS.reduce((s,a)=>s+a.hc,0)*10)/10, thr = Math.round(AREAS.reduce((s,a)=>s+a.hr,0)*10)/10;
   document.getElementById("r-hc").textContent = thc+" h";
   document.getElementById("r-phc").textContent = pct(thc)+"%";
   document.getElementById("r-hr").textContent = thr+" h";
