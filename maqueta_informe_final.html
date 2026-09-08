@@ -164,13 +164,20 @@
     font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#777;
     border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:12px;
   }
-  .retro-area{margin-bottom:14px;page-break-inside:avoid}
-  .retro-area .area-nombre{font-size:13px;font-weight:700;margin-bottom:6px}
+  .retro-area{margin-bottom:18px;page-break-inside:avoid}
+  .retro-area .area-nombre{
+    font-size:13px;font-weight:700;margin-bottom:8px;
+    background:#f2f2f2;padding:5px 9px;border-radius:4px;
+  }
   .retro-area .area-nombre .n{font-weight:400;color:#666;font-size:11.5px}
-  .retro-item{display:flex;gap:10px;font-size:12px;color:#333;margin-bottom:5px;padding-left:2px}
-  .retro-item .autor{flex:0 0 150px;font-weight:700;color:#555}
-  .retro-item .texto{flex:1}
-  .retro-vacia{font-size:11.5px;color:#999;font-style:italic}
+  .retro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .retro-card{border:1px solid #ddd;border-radius:5px;padding:8px 10px;background:#fcfcfc}
+  .retro-card .autor{
+    font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+    color:#666;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid #e2e2e2;
+  }
+  .retro-card .texto{font-size:11.5px;color:#333;line-height:1.5}
+  .retro-vacia{font-size:11.5px;color:#999;font-style:italic;padding:2px 9px}
 
   .doc-firmas{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px}
   .doc-firma{font-size:11.5px;text-align:center}
@@ -478,9 +485,11 @@ function renderRetroalimentacion(){
     if(nombres.length === 0){
       html += `<div class="retro-vacia">Sin retroalimentación registrada por la comisión para esta área.</div>`;
     } else {
+      html += `<div class="retro-grid">`;
       nombres.forEach(nombre=>{
-        html += `<div class="retro-item"><div class="autor">${nombre}</div><div class="texto">${entradas[nombre]}</div></div>`;
+        html += `<div class="retro-card"><div class="autor">${nombre}</div><div class="texto">${entradas[nombre]}</div></div>`;
       });
+      html += `</div>`;
     }
     html += `</div>`;
   });
