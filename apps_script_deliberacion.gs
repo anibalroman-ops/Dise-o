@@ -19,7 +19,7 @@ function doPost(e) {
 
     // Validar que tenemos datos
     if (!payload.comisionado || !payload.evaluaciones) {
-      return ContentServiceUtil.createTextOutput(JSON.stringify({
+      return ContentService.createTextOutput(JSON.stringify({
         success: false,
         error: "Datos incompletos"
       })).setMimeType(ContentService.MimeType.JSON);
@@ -33,14 +33,14 @@ function doPost(e) {
     // Actualizar hojas derivadas
     actualizarConsolidacion(ss, payload);
 
-    return ContentServiceUtil.createTextOutput(JSON.stringify({
+    return ContentService.createTextOutput(JSON.stringify({
       success: true,
       message: "Evaluación registrada",
       timestamp: payload.timestamp
     })).setMimeType(ContentService.MimeType.JSON);
 
   } catch (err) {
-    return ContentServiceUtil.createTextOutput(JSON.stringify({
+    return ContentService.createTextOutput(JSON.stringify({
       success: false,
       error: err.toString()
     })).setMimeType(ContentService.MimeType.JSON);
@@ -170,7 +170,7 @@ function inicializarHojas() {
   // 4. "Resultado Final" - resumen automático
   crearHojaResultado(ss);
 
-  SpreadsheetApp.getUi().alert("Hojas inicializadas correctamente");
+  Logger.log("Hojas inicializadas correctamente");
 }
 
 function crearHojaDatos(ss) {
@@ -259,9 +259,9 @@ function crearHojaResultado(ss) {
 // Deploy function: ejecutar esta para obtener URL pública
 // ========================================================================
 function deploy() {
-  // Una vez ejecutada, va a Extensiones > Todos los proyectos
-  // Selecciona este proyecto > clica en el icono de engranaje
-  // Copia el ID del deployment más reciente (tipo "versión nueva")
-  // URL será: https://script.google.com/macros/d/{DEPLOYMENT_ID}/usercache
-  SpreadsheetApp.getUi().alert("Deployment URL estará en Extensiones > Todos los proyectos > este proyecto");
+  // Esta función es solo una nota de referencia: no hace falta ejecutarla.
+  // El despliegue real se hace desde el botón "Implementar" del editor
+  // (arriba a la derecha) > "Nueva implementación" > tipo "Aplicación web".
+  // La URL resultante es la que se pega en GOOGLE_APPS_SCRIPT_URL del HTML.
+  Logger.log("Use el botón 'Implementar' del editor para desplegar, no esta función.");
 }
