@@ -265,3 +265,98 @@ function deploy() {
   // La URL resultante es la que se pega en GOOGLE_APPS_SCRIPT_URL del HTML.
   Logger.log("Use el botón 'Implementar' del editor para desplegar, no esta función.");
 }
+
+// ========================================================================
+// Datos del académico evaluado en este piloto.
+// Ajuste estos valores si cambia el caso (deben coincidir con el objeto
+// AREAS de sistema_evaluacion_maqueta_v2.html: mismo nombre, jornada y
+// horas comprometidas por área, para que la calificación final coincida).
+// ========================================================================
+const ACADEMICO = {
+  nombre: "Nombre Apellido Apellido",
+  unidad: "Depto. de Ingeniería Industrial",
+  jerarquia: "Profesor Asociado",
+  periodo: "2026",
+  jornada: 44,
+  areas_horas: {
+    "Docencia": 14,
+    "Investigación y desarrollo": 10,
+    "Extensión - VIME": 4,
+    "Extensión - Educación continua": 3,
+    "Asistencia técnica": 3,
+    "Administración académica": 7,
+    "Perfeccionamiento": 3
+  }
+};
+
+const AREAS_ORDEN = [
+  "Docencia", "Investigación y desarrollo", "Extensión - VIME",
+  "Extensión - Educación continua", "Asistencia técnica",
+  "Administración académica", "Perfeccionamiento"
+];
+
+// ========================================================================
+// Generar el JSON que carga panel_deliberacion.html, a partir de las
+// evaluaciones ya guardadas en "Datos brutos".
+// ========================================================================
+function generarJSONDeliberacion() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_NAME_DATOS);
+  const nFilas = sheet.getLastRow() - 1;
+
+  if (nFilas <= 0) {
+    SpreadsheetApp.getUi().alert("No hay evaluaciones en 'Datos brutos' todavía.");
+    return;
+  }
+
+  const filas = sheet.getRange(2, 1, nFilas, sheet.getLastColumn()).getValues();
+
+  const evaluaciones = filas.map(fila => {
+    const areas = AREAS_ORDEN.map((nombre, idx) => {
+      const base = 6 + idx * 3; // 0-indexado: col 7 = Docencia (Nivel)
+      return {
+        nombre: nombre,
+        nivel: fila[base],
+        fundamento: fila[base + 1]
+      };
+    }).filter(a => a.nivel !== "" && a.nivel !== null && a.nivel !== undefined);
+
+    return {
+      timestamp: fila[0] instanceof Date ? fila[0].toISOString() : String(fila[0]),
+      comisionado: {
+        nombre: fila[1],
+        correo: fila[2],
+        unidad: fila[3]
+      },
+      areas: areas
+    };
+  });
+
+  const resultado = { academico: ACADEMICO, evaluaciones: evaluaciones };
+  const json = JSON.stringify(resultado, null, 2);
+
+  let hojaExport = ss.getSheetByName("Exportar JSON");
+  if (!hojaExport) hojaExport = ss.insertSheet("Exportar JSON");
+  hojaExport.clear();
+  hojaExport.getRange(1, 1).setValue(
+    "Haga doble clic en la celda de abajo, Ctrl+A (seleccionar todo dentro de la celda), Ctrl+C (copiar), y pegue el contenido en un archivo de texto nuevo guardado con extensión .json"
+  ).setFontWeight("bold");
+  hojaExport.getRange(2, 1).setValue(json).setWrap(true);
+  ss.setActiveSheet(hojaExport);
+
+  SpreadsheetApp.getUi().alert(
+    "JSON generado en la hoja 'Exportar JSON', celda A2. Cópielo y péguelo en un archivo .json para subirlo al panel de deliberación."
+  );
+}
+
+// ========================================================================
+// Menú personalizado: aparece en la planilla al abrirla (puede tardar
+// unos segundos la primera vez, o requerir refrescar la página una vez
+// guardado este script).
+// ========================================================================
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu("Deliberación")
+    .addItem("Generar JSON para panel de deliberación", "generarJSONDeliberacion")
+    .addToUi();
+}
