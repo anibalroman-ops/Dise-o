@@ -96,6 +96,20 @@ function construirFila(payload) {
 }
 
 // ========================================================================
+// Recuperar un nivel numérico (0-4) aunque la celda de Google Sheets haya
+// quedado con formato de fecha/hora en vez de número. Esto ocurre cuando
+// Sheets auto-detecta el formato de una columna vacía a partir de algún
+// valor previo; el dato original no se pierde, solo se lee como Date.
+// ========================================================================
+function nivelNumerico(valor) {
+  if (valor instanceof Date) {
+    const epoca = new Date(1899, 11, 30); // época de fecha-serial de Sheets
+    return Math.round((valor.getTime() - epoca.getTime()) / 86400000);
+  }
+  return valor;
+}
+
+// ========================================================================
 // Actualizar hoja "Consolidación" (cálculos automáticos)
 // ========================================================================
 function actualizarConsolidacion(ss, payload) {
@@ -131,7 +145,7 @@ function actualizarConsolidacion(ss, payload) {
     // Extraer evaluaciones para esta área
     const evaluaciones = allData.map((row, rowIdx) => ({
       comisionado: row[1],
-      nivel: row[6 + idx * 3], // Columna de nivel para esta área
+      nivel: nivelNumerico(row[6 + idx * 3]), // Columna de nivel para esta área
       fundamento: row[6 + idx * 3 + 1],
       retroalimentacion: row[6 + idx * 3 + 2],
       rowNum: rowIdx + 2
@@ -203,6 +217,13 @@ function crearHojaDatos(ss) {
   sheet.appendRow(headers);
   sheet.setFrozenRows(1);
   sheet.getRange(1, 1, 1, headers.length).setBackground("#1F2937").setFontColor("white").setFontWeight("bold");
+
+  // Fijar formato numérico en las 7 columnas de "Nivel" (una por área) para
+  // que Sheets nunca las auto-detecte como fecha/hora al recibir un 0-4.
+  AREAS_ORDEN.forEach((nombreArea, idx) => {
+    const colNivel = 7 + idx * 3; // 1-indexado: col 7 = Docencia (Nivel)
+    sheet.getRange(2, colNivel, sheet.getMaxRows() - 1, 1).setNumberFormat("0");
+  });
 }
 
 function crearHojaConsolidacion(ss) {
@@ -326,7 +347,7 @@ function generarJSONDeliberacion() {
       const base = 6 + idx * 3; // 0-indexado: col 7 = Docencia (Nivel)
       return {
         nombre: nombre,
-        nivel: fila[base],
+        nivel: nivelNumerico(fila[base]),
         fundamento: fila[base + 1]
       };
     }).filter(a => a.nivel !== "" && a.nivel !== null && a.nivel !== undefined);
