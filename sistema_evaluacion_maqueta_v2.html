@@ -1194,7 +1194,7 @@
       <textarea id="modal-fund" placeholder="Antecedentes revisados, relación con el CDA, jerarquía, jornada y área evaluada…"></textarea>
     </div>
     <div class="campo-eval">
-      <label>Retroalimentación para el académico o académica</label>
+      <label>Retroalimentación para el académico o académica <span class="oblig" id="modal-oblig-retro"></span></label>
       <textarea id="modal-retro" placeholder="Fortalezas, brechas y orientaciones de mejora…"></textarea>
     </div>
 
@@ -1472,6 +1472,7 @@ function abrirModal(i){
   document.getElementById("modal-fund").value = ev.fund;
   document.getElementById("modal-retro").value = ev.retro;
   document.getElementById("modal-oblig-fund").textContent = ev.n!==null && [0,1,4].includes(ev.n) ? "obligatorio · fundamentación reforzada (5.6)" : (ev.n!==null ? "obligatorio" : "");
+  document.getElementById("modal-oblig-retro").textContent = ev.n!==null ? "obligatorio" : "";
 
   esc2.querySelectorAll(".nivel").forEach(b=>{
     b.onclick = ()=>{
@@ -1479,6 +1480,7 @@ function abrirModal(i){
       esc2.querySelectorAll(".nivel").forEach(x=> x.classList.toggle("sel", +x.dataset.n===n));
       document.getElementById("modal-desc").textContent = RUBRICA[n].cat + " — " + RUBRICA[n].d;
       document.getElementById("modal-oblig-fund").textContent = [0,1,4].includes(n) ? "obligatorio · fundamentación reforzada (5.6)" : "obligatorio";
+      document.getElementById("modal-oblig-retro").textContent = "obligatorio";
       modalIdx = i;
       esc2.dataset.sel = n;
     };
@@ -1500,6 +1502,7 @@ document.getElementById("modal-guardar").onclick = ()=>{
   if(n===""){ alert("Seleccione un nivel de desempeño antes de guardar."); return; }
   if(!fund){ alert("El fundamento es obligatorio."); return; }
   if([0,1,4].includes(+n) && fund.length<40){ alert("Este nivel exige fundamentación reforzada (Anexo I, 5.6): agregue más detalle."); return; }
+  if(!retro){ alert("La retroalimentación para el académico o académica es obligatoria."); return; }
   evalArea[modalIdx] = {n:+n, fund, retro};
   cerrarModal();
   renderAntecedentes(); calcularCF();

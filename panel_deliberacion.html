@@ -571,6 +571,10 @@
     font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
     color:#666;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid #e2e2e2;
   }
+  .retro-card .retro-sub{
+    font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+    color:#999;margin-top:7px;margin-bottom:2px;
+  }
   .retro-card .texto{font-size:11.5px;color:#333;line-height:1.5}
   .retro-vacia{font-size:11.5px;color:#999;font-style:italic;padding:2px 9px}
 
@@ -1142,7 +1146,7 @@ function renderInformeFinal(){
 
 function renderRetroalimentacion(){
   const cont = document.getElementById("doc-retro");
-  let html = `<div class="titulo">Retroalimentación de la comisión, por área</div>`;
+  let html = `<div class="titulo">Fundamentos y retroalimentación de la comisión, por área</div>`;
 
   AREAS.forEach(area=>{
     const n = deliberaciones[area].nivel;
@@ -1152,8 +1156,15 @@ function renderRetroalimentacion(){
       <div class="retro-grid">`;
     datosCargados.evaluaciones.forEach(e=>{
       const d = datosArea(e, area);
-      const texto = d?.retroalimentacion || "Sin retroalimentación registrada.";
-      html += `<div class="retro-card"><div class="autor">${e.comisionado.nombre}</div><div class="texto">${texto}</div></div>`;
+      const fund = d?.fundamento || "Sin fundamento registrado.";
+      const retro = d?.retroalimentacion || "Sin retroalimentación registrada.";
+      html += `<div class="retro-card">
+        <div class="autor">${e.comisionado.nombre}</div>
+        <div class="retro-sub">Fundamento</div>
+        <div class="texto">${fund}</div>
+        <div class="retro-sub">Retroalimentación</div>
+        <div class="texto">${retro}</div>
+      </div>`;
     });
     html += `</div></div>`;
   });
