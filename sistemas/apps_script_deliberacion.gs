@@ -314,19 +314,16 @@ function deploy() {
 // horas comprometidas por área, para que la calificación final coincida).
 // ========================================================================
 const ACADEMICO = {
-  nombre: "Nombre Apellido Apellido",
-  unidad: "Depto. de Ingeniería Industrial",
-  jerarquia: "Profesor Asociado",
-  periodo: "2026",
+  nombre: "Mohammadhosein Sabzalian",
+  unidad: "Depto. de Ingeniería Mecánica",
+  jerarquia: "Profesor Asistente",
+  periodo: "2024",
   jornada: 44,
   areas_horas: {
-    "Docencia": 14,
-    "Investigación y desarrollo": 10,
-    "Extensión - VIME": 4,
-    "Extensión - Educación continua": 3,
-    "Asistencia técnica": 3,
-    "Administración académica": 7,
-    "Perfeccionamiento": 3
+    "Docencia": 18.5,
+    "Investigación y desarrollo": 25.4,
+    "Administración académica": 0.3,
+    "Perfeccionamiento": 0.3
   }
 };
 
