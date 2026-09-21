@@ -1381,7 +1381,7 @@ function irA(p){
     el.classList.toggle("hecho", i<p);
   });
   paso = p;
-  if(p===2 && !inicioP2){ inicioP2 = Date.now(); if(!cronoId) cronoId = setInterval(tick,1000); }
+  if(p===1 && !inicioP2){ inicioP2 = Date.now(); if(!cronoId) cronoId = setInterval(tick,1000); }
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
