@@ -536,8 +536,13 @@
   #hoja-informe .doc-inst{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#555}
   #hoja-informe .doc-titulo{font-size:19px;font-weight:700;margin-top:6px}
   #hoja-informe .doc-sub{font-size:12px;color:#666;margin-top:4px}
-  .doc-datos{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:13px;margin-bottom:22px}
-  .doc-datos div span{color:#777;font-size:11px;text-transform:uppercase;letter-spacing:.03em;display:block}
+  table.doc-datos{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:22px;border:1px solid #ddd}
+  table.doc-datos th{
+    width:20%;text-align:left;padding:8px 10px;background:#f2f2f2;color:#666;
+    font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+    border:1px solid #ddd;vertical-align:top;
+  }
+  table.doc-datos td{width:30%;padding:8px 10px;border:1px solid #ddd;vertical-align:top}
   table.doc-tabla{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:18px}
   table.doc-tabla th{
     text-align:left;padding:7px 8px;background:#2b2b2b;color:#fff;font-size:11px;
@@ -565,6 +570,15 @@
     background:#f2f2f2;padding:5px 9px;border-radius:4px;
   }
   .retro-area .area-nombre .n{font-weight:400;color:#666;font-size:11.5px}
+  .notas-comision{
+    background:#fffbea;border:1px solid #f0dca0;border-radius:5px;
+    padding:8px 10px;margin-bottom:10px;
+  }
+  .notas-comision .notas-titulo{
+    font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+    color:#8a6d1f;margin-bottom:4px;
+  }
+  .notas-comision .notas-texto{font-size:11.5px;color:#333;line-height:1.5}
   .retro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
   .retro-card{border:1px solid #ddd;border-radius:5px;padding:8px 10px;background:#fcfcfc}
   .retro-card .autor{
@@ -737,16 +751,14 @@
       <div id="hoja-informe">
         <div class="doc-header">
           <div class="doc-inst">Universidad de Santiago de Chile — Facultad de Ingeniería</div>
-          <div class="doc-titulo">Informe Final de Evaluación de Desempeño Académico</div>
+          <div class="doc-titulo">Informe Anual de Precalificación de Desempeño Académico</div>
           <div class="doc-sub" id="doc-periodo">Convenio de Desempeño Académico</div>
         </div>
 
-        <div class="doc-datos">
-          <div><span>Académico(a)</span><span id="doc-nombre">—</span></div>
-          <div><span>Unidad</span><span id="doc-unidad">—</span></div>
-          <div><span>Jerarquía académica</span><span id="doc-jerarquia">—</span></div>
-          <div><span>Jornada contractual</span><span id="doc-jornada">—</span></div>
-        </div>
+        <table class="doc-datos">
+          <tr><th>Académico(a)</th><td id="doc-nombre">—</td><th>Unidad</th><td id="doc-unidad">—</td></tr>
+          <tr><th>Jerarquía académica</th><td id="doc-jerarquia">—</td><th>Jornada contractual</th><td id="doc-jornada">—</td></tr>
+        </table>
 
         <table class="doc-tabla">
           <thead>
@@ -792,6 +804,12 @@
   </div>
 
 </div>
+
+<!-- Generación de PDF directa (sin diálogo de impresión del navegador, así
+     no arrastra encabezados/pies que agrega Chrome al imprimir). Requiere
+     conexión a internet la primera vez que se abre esta página. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
 /* ========================================================================
@@ -1151,8 +1169,13 @@ function renderRetroalimentacion(){
   AREAS.forEach(area=>{
     const n = deliberaciones[area].nivel;
     const cat = RUBRICA[n].cat;
+    const notas = (deliberaciones[area].notas || "").trim();
     html += `<div class="retro-area">
       <div class="area-nombre">${area} <span class="n">— Nivel acordado: ${n} (${cat})</span></div>
+      <div class="notas-comision">
+        <div class="notas-titulo">Notas de la comisión</div>
+        <div class="notas-texto">${notas || "Sin notas registradas."}</div>
+      </div>
       <div class="retro-grid">`;
     datosCargados.evaluaciones.forEach(e=>{
       const d = datosArea(e, area);
@@ -1225,6 +1248,36 @@ function renderFirmasDocumento(){
   }).join("");
 }
 
+/* Genera el PDF directamente desde el contenido de #hoja-informe, sin pasar
+   por el diálogo de impresión del navegador (que agrega fecha, URL y número
+   de página en cada hoja, fuera de nuestro control). */
+async function exportarPDF(){
+  const { jsPDF } = window.jspdf;
+  const hoja = document.getElementById("hoja-informe");
+  const canvas = await html2canvas(hoja, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
+  const imgData = canvas.toDataURL("image/jpeg", 0.95);
+
+  const pdf = new jsPDF({ unit: "pt", format: "a4" });
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const imgWidth = pageWidth;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  let heightLeft = imgHeight;
+  let position = 0;
+  pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+  heightLeft -= pageHeight;
+  while (heightLeft > 0) {
+    position -= pageHeight;
+    pdf.addPage();
+    pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+  }
+
+  const nombreArchivo = `informe_precalificacion_${(datosCargados.academico.nombre || "academico").replace(/ /g, "_")}.pdf`;
+  pdf.save(nombreArchivo);
+}
+
 document.getElementById("btn-finalizar").onclick = ()=>{
   const resultado = {
     timestamp: new Date().toISOString(),
@@ -1252,7 +1305,7 @@ document.getElementById("btn-finalizar").onclick = ()=>{
   document.getElementById("btn-finalizar").disabled = true;
   document.getElementById("btn-finalizar").textContent = "Evaluación finalizada";
 
-  window.print();
+  exportarPDF();
 };
 </script>
 </body>
