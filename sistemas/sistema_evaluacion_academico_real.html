@@ -238,6 +238,45 @@
   }
   .check label{margin:0;cursor:pointer;flex:1;color:var(--tinta)}
 
+  /* ========== Encuesta del piloto ========== */
+  .encuesta{display:flex;flex-direction:column;gap:16px;margin:12px 0 20px}
+  .likert-item{
+    border:1px solid var(--gray-200);
+    border-radius:8px;
+    padding:12px 16px;
+  }
+  .likert-enunciado{font-size:13px;color:var(--tinta);margin-bottom:10px}
+  .likert-opciones{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .likert-opciones label{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    text-align:center;
+    font-size:11px;
+    color:var(--neutral);
+    cursor:pointer;
+    padding:8px 4px;
+    border:1px solid var(--gray-200);
+    border-radius:6px;
+    transition:all 0.15s;
+  }
+  .likert-opciones label:hover{border-color:var(--primary);background:var(--primary-light)}
+  .likert-opciones input{cursor:pointer;width:16px;height:16px}
+  .likert-opciones input:checked ~ span{color:var(--primary);font-weight:700}
+  .likert-opciones label:has(input:checked){border-color:var(--primary);background:var(--primary-light)}
+  .encuesta-abierta label{display:block;font-size:13px;font-weight:500;color:var(--neutral);margin-bottom:6px}
+  .encuesta-abierta textarea{
+    width:100%;
+    font:inherit;
+    font-size:13px;
+    border:1px solid var(--gray-300);
+    border-radius:6px;
+    padding:10px 12px;
+    min-height:60px;
+    resize:vertical;
+  }
+
   /* ========== Conflicto de Interés ========== */
   .conflicto{
     border:2px dashed var(--gray-300);
@@ -888,6 +927,7 @@
     .header-right{justify-content:space-between}
     .identificacion,.escala,.grid2{grid-template-columns:1fr}
     .registro{grid-template-columns:1fr}
+    .likert-opciones{grid-template-columns:1fr 1fr}
     .stepper{flex-direction:column}
     .paso{font-size:12px;padding:10px}
   }
@@ -1117,6 +1157,45 @@
           </div>
           <ul class="inc-lista" id="lista-inc"></ul>
         </div>
+      </div>
+    </div>
+
+    <h2>Cuestionario del piloto <span style="font-weight:400;color:var(--neutral-light);font-size:12px">(opcional — nos ayuda a mejorar el sistema)</span></h2>
+    <div class="encuesta">
+      <div class="likert-item">
+        <div class="likert-enunciado">El sistema fue fácil de usar y de entender.</div>
+        <div class="likert-opciones" data-likert="facilidad">
+          <label><input type="radio" name="lk-facilidad" value="1"><span>Muy en desacuerdo</span></label>
+          <label><input type="radio" name="lk-facilidad" value="2"><span>En desacuerdo</span></label>
+          <label><input type="radio" name="lk-facilidad" value="3"><span>De acuerdo</span></label>
+          <label><input type="radio" name="lk-facilidad" value="4"><span>Muy de acuerdo</span></label>
+        </div>
+      </div>
+      <div class="likert-item">
+        <div class="likert-enunciado">La información presentada (guía orientadora, rúbrica, evidencias, horas equivalentes) fue útil para fundamentar mi evaluación.</div>
+        <div class="likert-opciones" data-likert="utilidad">
+          <label><input type="radio" name="lk-utilidad" value="1"><span>Muy en desacuerdo</span></label>
+          <label><input type="radio" name="lk-utilidad" value="2"><span>En desacuerdo</span></label>
+          <label><input type="radio" name="lk-utilidad" value="3"><span>De acuerdo</span></label>
+          <label><input type="radio" name="lk-utilidad" value="4"><span>Muy de acuerdo</span></label>
+        </div>
+      </div>
+      <div class="likert-item">
+        <div class="likert-enunciado">Este sistema mejora el proceso actual (planilla Excel) para evaluar el desempeño académico.</div>
+        <div class="likert-opciones" data-likert="mejora_proceso">
+          <label><input type="radio" name="lk-mejora" value="1"><span>Muy en desacuerdo</span></label>
+          <label><input type="radio" name="lk-mejora" value="2"><span>En desacuerdo</span></label>
+          <label><input type="radio" name="lk-mejora" value="3"><span>De acuerdo</span></label>
+          <label><input type="radio" name="lk-mejora" value="4"><span>Muy de acuerdo</span></label>
+        </div>
+      </div>
+      <div class="encuesta-abierta">
+        <label for="enc-problemas">¿Qué problemas encontraste y qué mejorarías del sistema?</label>
+        <textarea id="enc-problemas" placeholder="Dificultades, pasos confusos, funciones que faltaron…"></textarea>
+      </div>
+      <div class="encuesta-abierta">
+        <label for="enc-bien">¿Qué funcionó bien o te pareció más útil del sistema?</label>
+        <textarea id="enc-bien" placeholder="Lo que sí ayudó a evaluar mejor o más rápido…"></textarea>
       </div>
     </div>
 
@@ -1625,13 +1704,10 @@ document.getElementById("btn-enviar").onclick = ()=>{
   document.querySelectorAll(".paso-c").forEach(el=> el.classList.add("oculto"));
   document.getElementById("stepper").classList.add("oculto");
   document.getElementById("pantalla-enviado").classList.remove("oculto");
-  inicioEnvio = Date.now();
   enviarAGoogleSheets();
 };
 
 /* ---- Envío a Google Sheets ---- */
-let inicioEnvio = null;
-
 function construirPayload(){
   const com = {
     nombre: document.getElementById("c-nombre").value,
@@ -1651,8 +1727,10 @@ function construirPayload(){
       retroalimentacion: evalArea[i].retro
     }));
 
-  const s = Math.floor((Date.now()-inicioEnvio)/1000);
+  const s = Math.floor((Date.now()-inicioP2)/1000);
   const mm = String(Math.floor(s/60)).padStart(2,"0"), ss = String(s%60).padStart(2,"0");
+
+  const likert = (name)=> document.querySelector(`input[name="${name}"]:checked`)?.value || "";
 
   return {
     timestamp: new Date().toISOString(),
@@ -1663,6 +1741,13 @@ function construirPayload(){
       comprende_horas: document.getElementById("chk-comp1").checked,
       comprende_circunstancias: document.getElementById("chk-comp2").checked,
       incidentes: incidentes
+    },
+    encuesta_piloto: {
+      facilidad_uso: likert("lk-facilidad"),
+      utilidad_informacion: likert("lk-utilidad"),
+      mejora_proceso: likert("lk-mejora"),
+      problemas_y_mejoras: document.getElementById("enc-problemas").value.trim(),
+      que_funciono_bien: document.getElementById("enc-bien").value.trim()
     }
   };
 }

@@ -92,6 +92,14 @@ function construirFila(payload) {
     .join(" | ");
   fila.push(incidentes || "Sin incidentes");
 
+  // Encuesta del piloto (evaluación del sistema, no del académico)
+  const enc = payload.encuesta_piloto || {};
+  fila.push(enc.facilidad_uso || "");
+  fila.push(enc.utilidad_informacion || "");
+  fila.push(enc.mejora_proceso || "");
+  fila.push(enc.problemas_y_mejoras || "");
+  fila.push(enc.que_funciono_bien || "");
+
   return fila;
 }
 
@@ -211,7 +219,9 @@ function crearHojaDatos(ss) {
     "Asistencia Técnica (Nivel)", "Asistencia Técnica (Fund)", "Asistencia Técnica (Retro)",
     "Admin Académica (Nivel)", "Admin Académica (Fund)", "Admin Académica (Retro)",
     "Perfeccionamiento (Nivel)", "Perfeccionamiento (Fund)", "Perfeccionamiento (Retro)",
-    "Tiempo Total", "Entiende Horas", "Entiende Circunstancias", "Incidentes"
+    "Tiempo Total", "Entiende Horas", "Entiende Circunstancias", "Incidentes",
+    "Encuesta: Facilidad de uso", "Encuesta: Utilidad de la información", "Encuesta: Mejora vs. proceso actual",
+    "Encuesta: Problemas y mejoras", "Encuesta: Qué funcionó bien"
   ];
 
   sheet.appendRow(headers);
