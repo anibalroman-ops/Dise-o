@@ -1264,12 +1264,26 @@ async function exportarPDF(){
   const hoja = document.getElementById("hoja-informe");
 
   // Bloques atómicos: hijos directos de #hoja-informe, pero desarmando
-  // #doc-retro en sus partes (título + una por área) para que cada área
-  // pueda paginarse de forma independiente.
+  // #doc-retro hasta el nivel de tarjeta individual (encabezado de área,
+  // notas de la comisión, y cada tarjeta de comisionado por separado) para
+  // que la paginación sea lo más fina posible y casi nunca necesite cortar
+  // un bloque a la mitad.
   const atomos = [];
   Array.from(hoja.children).forEach(el=>{
     if(el.id === "doc-retro"){
-      Array.from(el.children).forEach(sub=> atomos.push(sub));
+      Array.from(el.children).forEach(sub=>{
+        if(sub.classList.contains("retro-area")){
+          Array.from(sub.children).forEach(subsub=>{
+            if(subsub.classList.contains("retro-grid")){
+              Array.from(subsub.children).forEach(card=> atomos.push(card));
+            } else {
+              atomos.push(subsub);
+            }
+          });
+        } else {
+          atomos.push(sub);
+        }
+      });
     } else {
       atomos.push(el);
     }
@@ -1293,18 +1307,64 @@ async function exportarPDF(){
 
     if(alto > altoUtil){
       // Bloque más alto que una página completa (caso excepcional):
-      // se recorta en franjas, ya que no hay forma de evitarlo.
+      // se recorta el canvas de origen en franjas exactas y sin superposición
+      // (en vez de reposicionar la misma imagen sobre la página, que dejaba
+      // una franja duplicada en cada corte porque jsPDF recorta la imagen
+      // contra el borde físico de la hoja, no contra el margen).
       if(!primeraImagen) pdf.addPage();
-      let restante = alto, posicion = 0;
-      pdf.addImage(imgData, "JPEG", margen, margen - posicion, anchoUtil, alto);
-      restante -= altoUtil;
-      while(restante > 0){
-        posicion += altoUtil;
-        pdf.addPage();
-        pdf.addImage(imgData, "JPEG", margen, margen - posicion, anchoUtil, alto);
-        restante -= altoUtil;
+      const pxPorPunto = canvas.width / anchoUtil; // escala canvas-px -> pt
+      const franjaAltoPx = Math.floor(altoUtil * pxPorPunto);
+      const ctxOrigen = canvas.getContext("2d");
+      // Busca, cerca de la fila propuesta, una fila "en blanco" (color de fondo)
+      // para cortar ahí en vez de partir una línea de texto a la mitad. Si no
+      // encuentra ninguna en el rango de búsqueda, corta en la fila propuesta.
+      // Tolerancia: bordes verticales del bloque (ej. borde de una tarjeta)
+      // cruzan todas las filas con un puñado de píxeles oscuros, incluso en
+      // los espacios en blanco entre líneas de texto. Una fila de texto real
+      // tiene decenas o cientos de píxeles oscuros; el borde solo un puñado.
+      const TOLERANCIA_PX_OSCUROS = 12;
+      function filaEnBlanco(y){
+        const fila = ctxOrigen.getImageData(0, y, canvas.width, 1).data;
+        let countLow = 0;
+        for(let i=0; i<fila.length; i+=4){
+          if(fila[i] < 250 || fila[i+1] < 250 || fila[i+2] < 250){
+            countLow++;
+            if(countLow > TOLERANCIA_PX_OSCUROS) return false;
+          }
+        }
+        return true;
       }
-      cursorY = margen + (alto % altoUtil || altoUtil) + espacio;
+      function corteSeguro(yPropuesto){
+        const maxRetroceso = Math.round(franjaAltoPx * 0.2);
+        for(let y=yPropuesto; y>yPropuesto-maxRetroceso && y>0; y--){
+          if(filaEnBlanco(y)) return y;
+        }
+        return yPropuesto;
+      }
+      let y0 = 0, primeraFranja = true, ultimaFranjaAltoPt = 0;
+      while(y0 < canvas.height){
+        let altoPxReal = Math.min(franjaAltoPx, canvas.height - y0);
+        if(y0 + altoPxReal < canvas.height){
+          try{
+            const corte = corteSeguro(y0 + altoPxReal);
+            if(corte > y0) altoPxReal = corte - y0;
+          }catch(err){
+            // Canvas "tainted" u otro error de lectura de píxeles: se corta
+            // en la fila propuesta sin buscar un salto de línea seguro.
+          }
+        }
+        const franjaCanvas = document.createElement("canvas");
+        franjaCanvas.width = canvas.width;
+        franjaCanvas.height = altoPxReal;
+        franjaCanvas.getContext("2d").drawImage(canvas, 0, y0, canvas.width, altoPxReal, 0, 0, canvas.width, altoPxReal);
+        const franjaAltoPt = altoPxReal / pxPorPunto;
+        if(!primeraFranja) pdf.addPage();
+        pdf.addImage(franjaCanvas.toDataURL("image/jpeg", 0.92), "JPEG", margen, margen, anchoUtil, franjaAltoPt);
+        y0 += altoPxReal;
+        ultimaFranjaAltoPt = franjaAltoPt;
+        primeraFranja = false;
+      }
+      cursorY = margen + ultimaFranjaAltoPt + espacio;
       primeraImagen = false;
       continue;
     }
