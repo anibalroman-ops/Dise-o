@@ -414,8 +414,12 @@
     color:var(--neutral-light);
     cursor:pointer;
     transition:all 0.2s;
+    text-decoration:none;
+    display:inline-block;
   }
   .doc:hover{border-color:var(--primary);color:var(--primary)}
+  a.doc{border-color:var(--success);color:var(--success)}
+  a.doc:hover{background:var(--success);color:#fff}
 
   .est-badge{
     font-size:11px;
@@ -1209,7 +1213,8 @@ const AREAS = [
   compromisos:[
    {act:"Docencia directa frente a alumnos (N° créditos T-E)",
     res:"Docencia realizada en ICM (12 h primer semestre) y Magíster (4 h primer semestre, 5 h segundo semestre).",
-    ev:["Pendiente: evidencia documental"], est:"cumplido", hc:9.8, hr:14.3},
+    ev:[{nombre:"PDF · Constancia de asignaturas dictadas (Magíster DIMEC)", archivo:"evidencias_sabzalian/docencia_constancia_asignaturas_magister.pdf"}],
+    est:"cumplido", hc:9.8, hr:14.3},
    {act:"Preparación de clases", res:"Actividad recurrente asociada a la docencia directa comprometida.",
     ev:["Pendiente: evidencia documental"], est:"cumplido", hc:3.3, hr:3.3},
    {act:"Preparación de pruebas", res:"Actividad recurrente asociada a la evaluación de los cursos dictados.",
@@ -1389,7 +1394,10 @@ function renderAntecedentes(){
       const tr = document.createElement("tr");
       tr.innerHTML =
        `<td>${esc(c.act)}</td><td>${esc(c.res)}</td>`+
-       `<td><div class="evid">${c.ev.map(d=>`<span class="doc" title="Ver documento (simulado)">${esc(d)}</span>`).join("")}</div></td>`+
+       `<td><div class="evid">${c.ev.map(d=> typeof d==="object"
+         ? `<a class="doc" href="${esc(d.archivo)}" target="_blank" rel="noopener">${esc(d.nombre)}</a>`
+         : `<span class="doc" title="Aún no se adjunta evidencia">${esc(d)}</span>`
+       ).join("")}</div></td>`+
        `<td><span class="est-badge ${c.est}">${({cumplido:"Cumplido",parcial:"Parcial",no:"No realizado",repro:"Reprogramado"})[c.est]}</span></td>`+
        `<td class="num">${c.hc}</td><td class="num">${c.hr}</td><td></td>`;
       cuerpo.appendChild(tr);
