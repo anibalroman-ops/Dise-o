@@ -579,7 +579,7 @@
     color:#8a6d1f;margin-bottom:4px;
   }
   .notas-comision .notas-texto{font-size:11.5px;color:#333;line-height:1.5}
-  .retro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .retro-grid{display:flex;flex-direction:column;gap:10px}
   .retro-card{border:1px solid #ddd;border-radius:5px;padding:8px 10px;background:#fcfcfc}
   .retro-card .autor{
     font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
@@ -1250,28 +1250,72 @@ function renderFirmasDocumento(){
 
 /* Genera el PDF directamente desde el contenido de #hoja-informe, sin pasar
    por el diálogo de impresión del navegador (que agrega fecha, URL y número
-   de página en cada hoja, fuera de nuestro control). */
+   de página en cada hoja, fuera de nuestro control).
+
+   Para no cortar texto a mitad de página, no se captura #hoja-informe como
+   una sola imagen larga que luego se recorta a la fuerza cada cierta
+   altura fija. En su lugar, cada bloque de contenido (encabezado, tabla de
+   datos, tabla de áreas, calificación final, y cada área de fundamentos y
+   retroalimentación por separado) se captura como su propia imagen, y se
+   van ubicando una tras otra: si una no cabe entera en el espacio que
+   queda de la página actual, se pasa a la página siguiente completa. */
 async function exportarPDF(){
   const { jsPDF } = window.jspdf;
   const hoja = document.getElementById("hoja-informe");
-  const canvas = await html2canvas(hoja, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
-  const imgData = canvas.toDataURL("image/jpeg", 0.95);
+
+  // Bloques atómicos: hijos directos de #hoja-informe, pero desarmando
+  // #doc-retro en sus partes (título + una por área) para que cada área
+  // pueda paginarse de forma independiente.
+  const atomos = [];
+  Array.from(hoja.children).forEach(el=>{
+    if(el.id === "doc-retro"){
+      Array.from(el.children).forEach(sub=> atomos.push(sub));
+    } else {
+      atomos.push(el);
+    }
+  });
 
   const pdf = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
-  const imgWidth = pageWidth;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  const margen = 40;
+  const anchoUtil = pageWidth - margen * 2;
+  const altoUtil = pageHeight - margen * 2;
+  const espacio = 10; // separación vertical entre bloques
 
-  let heightLeft = imgHeight;
-  let position = 0;
-  pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-  heightLeft -= pageHeight;
-  while (heightLeft > 0) {
-    position -= pageHeight;
-    pdf.addPage();
-    pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
+  let cursorY = margen;
+  let primeraImagen = true;
+
+  for(const atomo of atomos){
+    const canvas = await html2canvas(atomo, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
+    const alto = (canvas.height * anchoUtil) / canvas.width;
+    const imgData = canvas.toDataURL("image/jpeg", 0.92);
+
+    if(alto > altoUtil){
+      // Bloque más alto que una página completa (caso excepcional):
+      // se recorta en franjas, ya que no hay forma de evitarlo.
+      if(!primeraImagen) pdf.addPage();
+      let restante = alto, posicion = 0;
+      pdf.addImage(imgData, "JPEG", margen, margen - posicion, anchoUtil, alto);
+      restante -= altoUtil;
+      while(restante > 0){
+        posicion += altoUtil;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", margen, margen - posicion, anchoUtil, alto);
+        restante -= altoUtil;
+      }
+      cursorY = margen + (alto % altoUtil || altoUtil) + espacio;
+      primeraImagen = false;
+      continue;
+    }
+
+    if(!primeraImagen && cursorY + alto > pageHeight - margen){
+      pdf.addPage();
+      cursorY = margen;
+    }
+    pdf.addImage(imgData, "JPEG", margen, cursorY, anchoUtil, alto);
+    cursorY += alto + espacio;
+    primeraImagen = false;
   }
 
   const nombreArchivo = `informe_precalificacion_${(datosCargados.academico.nombre || "academico").replace(/ /g, "_")}.pdf`;
